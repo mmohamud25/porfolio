@@ -589,6 +589,8 @@
 
     .contact-form { display: flex; flex-direction: column; gap: 16px; }
 
+    .contact-form form { display: flex; flex-direction: column; gap: 16px; }
+
     .contact-form input,
     .contact-form textarea {
       background: var(--card);
@@ -886,11 +888,12 @@
         </div>
       </div>
       <div class="contact-form">
-        <input type="text" id="fname" placeholder="Your Name" required />
-        <input type="email" id="femail" placeholder="Your Email *" required />
-        <textarea id="fmessage" placeholder="Your message..." required></textarea>
-        <button type="button" onclick="submitForm()">Send Message</button>
-        <p id="form-status" style="font-size:0.85rem;color:var(--cyan);display:none;margin-top:8px;"></p>
+        <form action="https://formspree.io/f/xyknjrdo" method="POST">
+          <input type="text" name="name" placeholder="Your Name" required />
+          <input type="email" name="email" placeholder="Your Email *" required />
+          <textarea name="message" placeholder="Your message..." required></textarea>
+          <button type="submit">Send Message</button>
+        </form>
       </div>
     </div>
   </div>
