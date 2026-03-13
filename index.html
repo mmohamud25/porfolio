@@ -875,10 +875,6 @@
       <div class="contact-info">
         <p>Open to cybersecurity roles, collaborations, and conversations about tech education. Based in Columbus, OH.</p>
         <div class="contact-links">
-          <a href="/cdn-cgi/l/email-protection#0865676069656d6c6567606965657d6c486f65696164266b6765" class="contact-link">
-            <div class="contact-link-icon">✉</div>
-            <span class="__cf_email__" data-cfemail="f29f9d9a939f97969f9d9a939f9f8796b2959f939b9edc919d9f">[email&#160;protected]</span>
-          </a>
           <a href="https://linkedin.com/in/mohamed-2-mohamud" target="_blank" class="contact-link">
             <div class="contact-link-icon">in</div>
             linkedin.com/in/mohamed-2-mohamud
@@ -890,10 +886,11 @@
         </div>
       </div>
       <div class="contact-form">
-        <input type="text" placeholder="Your Name" />
-        <input type="email" placeholder="Your Email" />
-        <textarea placeholder="Your message..."></textarea>
-        <button>Send Message</button>
+        <input type="text" id="fname" placeholder="Your Name" required />
+        <input type="email" id="femail" placeholder="Your Email *" required />
+        <textarea id="fmessage" placeholder="Your message..." required></textarea>
+        <button type="button" onclick="submitForm()">Send Message</button>
+        <p id="form-status" style="font-size:0.85rem;color:var(--cyan);display:none;margin-top:8px;"></p>
       </div>
     </div>
   </div>
@@ -916,6 +913,54 @@
     event.target.classList.add('active');
     document.getElementById('panel-' + lang).classList.add('active');
     document.getElementById('codeFilename').textContent = filenames[lang];
+  }
+
+  // Contact form via Formspree
+  async function submitForm() {
+    const name = document.getElementById('fname').value.trim();
+    const email = document.getElementById('femail').value.trim();
+    const message = document.getElementById('fmessage').value.trim();
+    const status = document.getElementById('form-status');
+
+    if (!name || !email || !message) {
+      status.style.color = '#ff6b6b';
+      status.textContent = 'Please fill in all fields.';
+      status.style.display = 'block';
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      status.style.color = '#ff6b6b';
+      status.textContent = 'Please enter a valid email address.';
+      status.style.display = 'block';
+      return;
+    }
+
+    status.style.color = 'var(--cyan)';
+    status.textContent = 'Sending...';
+    status.style.display = 'block';
+
+    try {
+      const res = await fetch('https://formspree.io/f/xyknjrdo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, message })
+      });
+
+      if (res.ok) {
+        status.textContent = 'Message sent. I will get back to you soon.';
+        document.getElementById('fname').value = '';
+        document.getElementById('femail').value = '';
+        document.getElementById('fmessage').value = '';
+      } else {
+        status.style.color = '#ff6b6b';
+        status.textContent = 'Something went wrong. Try reaching out on LinkedIn.';
+      }
+    } catch {
+      status.style.color = '#ff6b6b';
+      status.textContent = 'Connection error. Try reaching out on LinkedIn.';
+    }
   }
 
   // Scroll animations
