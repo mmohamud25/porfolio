@@ -475,6 +475,68 @@
       font-size: 0.82rem;
     }
 
+    /* RESUME */
+    .resume-download-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--card);
+      border: 1px solid rgba(0,212,255,0.15);
+      border-radius: 10px;
+      padding: 24px 28px;
+      margin-bottom: 32px;
+    }
+
+    .resume-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+    }
+
+    .resume-block {
+      background: var(--card);
+      border: 1px solid rgba(0,212,255,0.08);
+      border-radius: 10px;
+      padding: 28px;
+      transition: all 0.3s;
+    }
+
+    .resume-block:hover {
+      border-color: rgba(0,212,255,0.35);
+      transform: translateY(-4px);
+    }
+
+    .resume-block-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--cyan);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .resume-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .resume-list li {
+      font-size: 0.85rem;
+      color: #a0aec0;
+      line-height: 1.6;
+      padding-left: 14px;
+      position: relative;
+    }
+
+    .resume-list li::before {
+      content: '›';
+      position: absolute;
+      left: 0;
+      color: var(--cyan);
+    }
+
     /* BLOG */
     .blog-grid {
       display: grid;
@@ -666,6 +728,7 @@
     <li><a href="#about">About</a></li>
     <li><a href="#experience">Experience</a></li>
     <li><a href="#skills">Skills</a></li>
+    <li><a href="#resume">Resume</a></li>
     <li><a href="#blog">Blog</a></li>
     <li><a href="#contact">Contact</a></li>
   </ul>
@@ -685,6 +748,7 @@
     <div class="hero-btns">
       <a href="#contact" class="btn-primary">Get In Touch</a>
       <a href="#experience" class="btn-outline">View Experience</a>
+      <a href="Mohamed_Mohamud_Resume_Web.docx" download class="btn-outline">Download Resume</a>
     </div>
   </div>
 </div>
@@ -837,6 +901,62 @@
         <span class="skill-tag">Arabic (Conversational)</span>
       </div>
     </div>
+  </div>
+</section>
+
+<!-- RESUME -->
+<section id="resume">
+  <div class="section-label">// 04. Resume</div>
+  <h2 class="section-title">My <span>Resume</span></h2>
+
+  <div class="resume-download-bar">
+    <div>
+      <div style="font-size:1rem;font-weight:600;margin-bottom:4px;">Mohamed Mohamud</div>
+      <div style="font-size:0.85rem;color:var(--gray);">Cybersecurity Professional · IT Support · Community Builder</div>
+    </div>
+    <a href="Mohamed_Mohamud_Resume_Web.docx" download class="btn-primary" style="white-space:nowrap;">Download Resume</a>
+  </div>
+
+  <div class="resume-grid">
+
+    <div class="resume-block">
+      <div class="resume-block-title">Certifications</div>
+      <ul class="resume-list">
+        <li>CompTIA Security+ (In Progress — SY0-701)</li>
+        <li>Google Data Analytics Professional Certificate</li>
+        <li>IBM Data Analytics Professional Certificate</li>
+        <li>TryHackMe — Pre-Security and Cybersecurity 101 (Completed)</li>
+      </ul>
+    </div>
+
+    <div class="resume-block">
+      <div class="resume-block-title">Education</div>
+      <ul class="resume-list">
+        <li><strong>MS Business Analytics</strong> — Franklin University (GPA 4.0, 2024–2026)</li>
+        <li><strong>BS Business</strong> — Franklin University (GPA 3.5, 2022–2024)</li>
+        <li><strong>AS Computer Science</strong> — Columbus State Community College (GPA 3.4, 2019–2022)</li>
+      </ul>
+    </div>
+
+    <div class="resume-block">
+      <div class="resume-block-title">Key Skills</div>
+      <ul class="resume-list">
+        <li>Access Control · Incident Response · Zero Trust · NIST</li>
+        <li>Python · SQL · HTML/CSS · React.js · Pandas</li>
+        <li>AWS · Azure · Tableau · Power BI · BigQuery</li>
+        <li>English (Fluent) · Somali (Native) · Arabic (Conversational)</li>
+      </ul>
+    </div>
+
+    <div class="resume-block">
+      <div class="resume-block-title">Projects</div>
+      <ul class="resume-list">
+        <li>Cybersecurity Fundamentals Course — Kulan Institute</li>
+        <li>Cyclistic Bike-Share Data Analysis — Tableau and SQL</li>
+        <li>Public Records Demographic Analysis — Python and Pandas</li>
+      </ul>
+    </div>
+
   </div>
 </section>
 
