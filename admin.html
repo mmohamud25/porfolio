@@ -6,408 +6,592 @@
   <title>Admin | mmohamud.me</title>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
   <style>
-    :root{--transition:0.3s ease;}
-    [data-theme="light"]{--bg:#f8fafc;--bg2:#ffffff;--bg3:#eef2ff;--card:#ffffff;--border:rgba(26,37,64,0.1);--text:#1a2540;--text2:#3d4f6e;--gray:#64748b;--accent:#0066cc;--shadow:rgba(0,0,0,0.06);--nav-bg:rgba(248,250,252,0.95);--danger:#dc2626;--success:#16a34a;--skeleton:#e2e8f0;}
-    [data-theme="dark"]{--bg:#080e1c;--bg2:#0f172a;--bg3:#1a2540;--card:#0f1a2e;--border:rgba(0,212,255,0.1);--text:#eef2ff;--text2:#a0aec0;--gray:#7a8599;--accent:#00d4ff;--shadow:rgba(0,212,255,0.06);--nav-bg:rgba(8,14,28,0.95);--danger:#f87171;--success:#4ade80;--skeleton:#1a2540;}
+    :root{--t:.3s ease;}
+    [data-theme="light"]{--bg:#f8fafc;--bg2:#fff;--bg3:#eef2ff;--card:#fff;--border:rgba(26,37,64,.1);--text:#1a2540;--text2:#3d4f6e;--gray:#64748b;--accent:#0066cc;--shadow:rgba(0,0,0,.06);--danger:#dc2626;--success:#16a34a;--warn:#d97706;--toolbar:#f1f5f9;--editor-bg:#fff;--editor-border:#e2e8f0;}
+    [data-theme="dark"]{--bg:#080e1c;--bg2:#0f172a;--bg3:#1a2540;--card:#0f1a2e;--border:rgba(0,212,255,.1);--text:#eef2ff;--text2:#a0aec0;--gray:#7a8599;--accent:#00d4ff;--shadow:rgba(0,212,255,.06);--danger:#f87171;--success:#4ade80;--warn:#fbbf24;--toolbar:#1a2540;--editor-bg:#0f1a2e;--editor-border:rgba(0,212,255,.15);}
     *{margin:0;padding:0;box-sizing:border-box;}
-    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;transition:background var(--transition),color var(--transition);}
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;transition:background var(--t),color var(--t);}
 
-    /* LOGIN */
     #loginScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;}
-    .login-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:48px;max-width:400px;width:100%;text-align:center;box-shadow:0 4px 24px var(--shadow);}
-    .login-logo{font-family:'IBM Plex Mono',monospace;font-size:1.1rem;color:var(--accent);margin-bottom:6px;letter-spacing:3px;}
-    .login-sub{font-size:0.82rem;color:var(--gray);margin-bottom:32px;}
-    .login-box input{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:13px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.9rem;outline:none;margin-bottom:12px;transition:border-color 0.3s;}
-    .login-box input:focus{border-color:var(--accent);}
-    .login-box input::placeholder{color:var(--gray);}
-    .login-btn{width:100%;background:var(--accent);color:var(--bg);border:none;padding:13px;border-radius:8px;font-weight:700;font-size:0.9rem;cursor:pointer;letter-spacing:1px;transition:all 0.3s;}
-    .login-btn:hover{opacity:0.85;}
-    .login-err{color:var(--danger);font-size:0.8rem;margin-top:10px;display:none;}
-    .login-theme{margin-top:20px;}
-    .login-theme button{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:6px 16px;cursor:pointer;font-size:0.78rem;color:var(--gray);transition:all 0.3s;}
-    .login-theme button:hover{border-color:var(--accent);color:var(--accent);}
+    .lbox{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:46px;max-width:400px;width:100%;text-align:center;box-shadow:0 4px 24px var(--shadow);}
+    .llogo{font-family:'IBM Plex Mono',monospace;font-size:1.1rem;color:var(--accent);margin-bottom:6px;letter-spacing:3px;}
+    .lsub{font-size:.82rem;color:var(--gray);margin-bottom:30px;}
+    .lbox input[type=password]{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:12px 15px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;outline:none;margin-bottom:11px;transition:border-color .3s;}
+    .lbox input[type=password]::placeholder{color:var(--gray);}
+    .lbox input[type=password]:focus{border-color:var(--accent);}
+    .lbtn{width:100%;background:var(--accent);color:var(--bg);border:none;padding:12px;border-radius:8px;font-weight:700;font-size:.9rem;cursor:pointer;letter-spacing:1px;transition:all .3s;margin-bottom:11px;}
+    .lbtn:hover{opacity:.85;}
+    .lerr{color:var(--danger);font-size:.78rem;margin-top:3px;display:none;}
+    .ltheme{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:5px 15px;cursor:pointer;font-size:.76rem;color:var(--gray);transition:all .3s;margin-top:14px;}
+    .ltheme:hover{border-color:var(--accent);color:var(--accent);}
 
-    /* DASHBOARD */
-    #dashboard{display:none;min-height:100vh;}
-    .dash-header{background:var(--card);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10;transition:background var(--transition);}
-    .dash-logo{font-family:'IBM Plex Mono',monospace;font-size:0.9rem;color:var(--accent);letter-spacing:2px;}
-    .dash-nav{display:flex;gap:6px;}
-    .dash-tab{font-family:'IBM Plex Mono',monospace;font-size:0.7rem;padding:7px 16px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--gray);cursor:pointer;transition:all 0.3s;letter-spacing:1px;}
-    .dash-tab.active,.dash-tab:hover{border-color:var(--accent);color:var(--accent);background:var(--bg3);}
-    .dash-actions{display:flex;gap:8px;align-items:center;}
-    .theme-btn{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:6px 14px;cursor:pointer;font-size:0.76rem;color:var(--gray);display:flex;align-items:center;gap:5px;transition:all 0.3s;}
-    .theme-btn:hover{border-color:var(--accent);color:var(--accent);}
-    .view-site{font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--gray);text-decoration:none;border:1px solid var(--border);padding:6px 14px;border-radius:6px;transition:all 0.3s;}
-    .view-site:hover{color:var(--accent);border-color:var(--accent);}
-    .logout-btn{font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--danger);border:1px solid rgba(220,38,38,0.3);padding:6px 14px;border-radius:6px;cursor:pointer;background:transparent;transition:all 0.3s;}
-    .logout-btn:hover{background:rgba(220,38,38,0.1);}
+    #dashboard{display:none;}
+    .dh{background:var(--card);border-bottom:1px solid var(--border);padding:13px 26px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10;transition:background var(--t);flex-wrap:wrap;gap:9px;}
+    .dlogo{font-family:'IBM Plex Mono',monospace;font-size:.88rem;color:var(--accent);letter-spacing:2px;}
+    .dnav{display:flex;gap:5px;flex-wrap:wrap;}
+    .dtab{font-family:'IBM Plex Mono',monospace;font-size:.68rem;padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--gray);cursor:pointer;transition:all .3s;letter-spacing:1px;position:relative;}
+    .dtab.active,.dtab:hover{border-color:var(--accent);color:var(--accent);background:var(--bg3);}
+    .dtab .badge{position:absolute;top:-6px;right:-6px;background:var(--danger);color:#fff;font-size:.58rem;width:15px;height:15px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+    .dactions{display:flex;gap:7px;align-items:center;}
+    .tbtn{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:5px 13px;cursor:pointer;font-size:.74rem;color:var(--gray);display:flex;align-items:center;gap:4px;transition:all .3s;}
+    .tbtn:hover{border-color:var(--accent);color:var(--accent);}
+    .vsite{font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:var(--gray);text-decoration:none;border:1px solid var(--border);padding:5px 13px;border-radius:6px;transition:all .3s;}
+    .vsite:hover{color:var(--accent);border-color:var(--accent);}
+    .lobtn{font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:var(--danger);border:1px solid rgba(220,38,38,.3);padding:5px 13px;border-radius:6px;cursor:pointer;background:transparent;transition:all .3s;}
+    .lobtn:hover{background:rgba(220,38,38,.1);}
 
-    .dash-body{padding:28px;max-width:1100px;margin:0 auto;}
+    .dbody{padding:24px;max-width:1100px;margin:0 auto;}
     .panel{display:none;}.panel.active{display:block;}
+    .sbstat{display:flex;align-items:center;gap:8px;font-family:'IBM Plex Mono',monospace;font-size:.7rem;padding:7px 13px;border-radius:6px;border:1px solid var(--border);margin-bottom:18px;background:var(--card);}
+    .sbdot{width:8px;height:8px;border-radius:50%;}.sbdot.on{background:#22c55e;}.sbdot.off{background:#f0b429;}
+    .srow{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;margin-bottom:22px;}
+    .sbox{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:15px;box-shadow:0 2px 8px var(--shadow);}
+    .snum{font-family:'IBM Plex Mono',monospace;font-size:1.6rem;color:var(--accent);font-weight:700;margin-bottom:3px;}
+    .slbl{font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px;}
 
-    /* STATS */
-    .stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;margin-bottom:28px;}
-    .stat-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px;box-shadow:0 2px 8px var(--shadow);}
-    .stat-box-num{font-family:'IBM Plex Mono',monospace;font-size:1.8rem;color:var(--accent);font-weight:700;margin-bottom:3px;}
-    .stat-box-label{font-size:0.75rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px;}
+    /* ANALYTICS */
+    .analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:24px;}
+    .chart-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:0 2px 8px var(--shadow);}
+    .chart-title{font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:14px;text-transform:uppercase;}
+    .top-list{display:flex;flex-direction:column;gap:9px;}
+    .top-item{display:flex;justify-content:space-between;align-items:center;}
+    .top-name{font-size:.82rem;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:70%;}
+    .top-bar-wrap{display:flex;align-items:center;gap:8px;min-width:100px;}
+    .top-bar-bg{flex:1;height:6px;background:var(--bg3);border-radius:10px;overflow:hidden;}
+    .top-bar-fill{height:100%;background:var(--accent);border-radius:10px;transition:width .8s ease;}
+    .top-views{font-family:'IBM Plex Mono',monospace;font-size:.66rem;color:var(--gray);}
 
-    /* SUPABASE STATUS */
-    .sb-status{display:flex;align-items:center;gap:8px;font-family:'IBM Plex Mono',monospace;font-size:0.72rem;padding:8px 14px;border-radius:6px;border:1px solid var(--border);margin-bottom:24px;background:var(--card);}
-    .sb-dot{width:8px;height:8px;border-radius:50%;}
-    .sb-dot.connected{background:#22c55e;}
-    .sb-dot.local{background:#f0b429;}
-
-    /* FORMS */
-    .form-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:28px;margin-bottom:24px;box-shadow:0 2px 8px var(--shadow);}
-    .form-title{font-family:'IBM Plex Mono',monospace;font-size:0.78rem;color:var(--accent);letter-spacing:2px;margin-bottom:20px;text-transform:uppercase;}
-    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
-    .form-grid.full{grid-template-columns:1fr;}
-    .form-group{display:flex;flex-direction:column;gap:5px;}
-    .form-group label{font-size:0.78rem;color:var(--gray);letter-spacing:0.5px;}
-    .form-group input,.form-group select,.form-group textarea{background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.88rem;outline:none;transition:border-color 0.3s;width:100%;}
-    .form-group input::placeholder,.form-group textarea::placeholder{color:var(--gray);}
-    .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--accent);}
-    .form-group select option{background:var(--bg);}
-    .form-group textarea{resize:vertical;min-height:90px;line-height:1.6;}
-    .form-group textarea.tall{min-height:160px;}
-    .form-hint{font-size:0.7rem;color:rgba(100,116,139,0.7);margin-top:2px;}
-    .form-actions{display:flex;gap:10px;margin-top:18px;align-items:center;flex-wrap:wrap;}
-    .save-btn{background:var(--accent);color:var(--bg);border:none;padding:10px 26px;border-radius:8px;font-weight:700;font-size:0.85rem;cursor:pointer;letter-spacing:1px;transition:all 0.3s;}
-    .save-btn:hover{opacity:0.85;}
-    .cancel-btn{background:transparent;border:1px solid var(--border);color:var(--gray);padding:10px 18px;border-radius:8px;font-size:0.85rem;cursor:pointer;transition:all 0.3s;}
-    .cancel-btn:hover{border-color:var(--gray);}
-    .success-msg{color:var(--success);font-size:0.78rem;font-family:'IBM Plex Mono',monospace;display:none;}
-    .error-msg{color:var(--danger);font-size:0.78rem;display:none;}
-
-    /* IMAGE UPLOAD */
-    .img-upload{border:2px dashed var(--border);border-radius:8px;padding:18px;text-align:center;cursor:pointer;transition:all 0.3s;position:relative;}
-    .img-upload:hover{border-color:var(--accent);}
-    .img-upload input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;}
-    .img-upload p{font-size:0.8rem;color:var(--gray);margin-top:4px;}
-    .img-preview{margin-top:10px;width:100%;max-height:150px;object-fit:cover;border-radius:6px;display:none;}
-
-    /* TOGGLE */
-    .toggle-wrap{display:flex;align-items:center;gap:10px;}
-    .toggle{position:relative;display:inline-block;width:44px;height:24px;}
+    /* FORM */
+    .fcard{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:26px;margin-bottom:22px;box-shadow:0 2px 8px var(--shadow);}
+    .ftitle{font-family:'IBM Plex Mono',monospace;font-size:.76rem;color:var(--accent);letter-spacing:2px;margin-bottom:18px;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center;}
+    .autosave-status{font-size:.68rem;color:var(--gray);}
+    .autosave-status.saved{color:var(--success);}
+    .fg{display:grid;grid-template-columns:1fr 1fr;gap:13px;}
+    .fg.full{grid-template-columns:1fr;}
+    .fgroup{display:flex;flex-direction:column;gap:4px;}
+    .fgroup label{font-size:.76rem;color:var(--gray);letter-spacing:.5px;}
+    .fgroup input,.fgroup select,.fgroup textarea{background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.86rem;outline:none;transition:border-color .3s;width:100%;}
+    .fgroup input::placeholder,.fgroup textarea::placeholder{color:var(--gray);}
+    .fgroup input:focus,.fgroup select:focus,.fgroup textarea:focus{border-color:var(--accent);}
+    .fgroup select option{background:var(--bg);}
+    .fgroup textarea{resize:vertical;min-height:80px;line-height:1.6;}
+    .fhint{font-size:.68rem;color:rgba(100,116,139,.7);margin-top:2px;}
+    .factions{display:flex;gap:9px;margin-top:16px;align-items:center;flex-wrap:wrap;}
+    .savebtn{background:var(--accent);color:var(--bg);border:none;padding:9px 24px;border-radius:8px;font-weight:700;font-size:.83rem;cursor:pointer;letter-spacing:1px;transition:all .3s;}
+    .savebtn:hover{opacity:.85;}
+    .draftbtn{background:var(--bg3);border:1.5px solid var(--border);color:var(--text2);padding:9px 18px;border-radius:8px;font-weight:600;font-size:.83rem;cursor:pointer;transition:all .3s;}
+    .draftbtn:hover{border-color:var(--accent);color:var(--accent);}
+    .prevbtn{background:transparent;border:1.5px solid var(--border);color:var(--gray);padding:9px 18px;border-radius:8px;font-size:.83rem;cursor:pointer;transition:all .3s;}
+    .prevbtn:hover{border-color:var(--accent);color:var(--accent);}
+    .cancelbtn{background:transparent;border:1px solid var(--border);color:var(--gray);padding:9px 16px;border-radius:8px;font-size:.83rem;cursor:pointer;transition:all .3s;}
+    .cancelbtn:hover{border-color:var(--gray);}
+    .sucmsg{color:var(--success);font-size:.76rem;font-family:'IBM Plex Mono',monospace;display:none;}
+    .errmsg{color:var(--danger);font-size:.76rem;display:none;}
+    .toggle-wrap{display:flex;align-items:center;gap:9px;}
+    .toggle{position:relative;display:inline-block;width:42px;height:22px;}
     .toggle input{opacity:0;width:0;height:0;}
-    .toggle-slider{position:absolute;cursor:pointer;inset:0;background:var(--border);border-radius:24px;transition:0.3s;}
-    .toggle-slider:before{content:'';position:absolute;height:18px;width:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:0.3s;}
-    .toggle input:checked+.toggle-slider{background:var(--accent);}
-    .toggle input:checked+.toggle-slider:before{transform:translateX(20px);}
-    .toggle-label{font-size:0.84rem;color:var(--text2);}
+    .tslider{position:absolute;cursor:pointer;inset:0;background:var(--border);border-radius:22px;transition:.3s;}
+    .tslider:before{content:'';position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s;}
+    .toggle input:checked+.tslider{background:var(--accent);}
+    .toggle input:checked+.tslider:before{transform:translateX(20px);}
+    .tlabel{font-size:.82rem;color:var(--text2);}
+
+    /* EDITOR */
+    .ewrap{border:1.5px solid var(--editor-border);border-radius:10px;overflow:hidden;background:var(--editor-bg);}
+    .etb{background:var(--toolbar);border-bottom:1px solid var(--editor-border);padding:9px 13px;display:flex;gap:3px;flex-wrap:wrap;align-items:center;}
+    .tbtn2{background:transparent;border:1px solid transparent;border-radius:4px;padding:4px 8px;cursor:pointer;font-size:.8rem;color:var(--text);transition:all .2s;font-family:'DM Sans',sans-serif;line-height:1;}
+    .tbtn2:hover{background:var(--bg3);border-color:var(--border);}
+    .tsep{width:1px;height:18px;background:var(--border);margin:0 3px;}
+    .tsel{background:var(--toolbar);border:1px solid var(--border);border-radius:4px;padding:3px 7px;font-size:.78rem;color:var(--text);cursor:pointer;outline:none;}
+    .tsel option{background:var(--bg);}
+    .earea{min-height:420px;max-height:620px;padding:20px 22px;outline:none;font-size:.95rem;line-height:1.85;color:var(--text);font-family:'DM Sans',sans-serif;overflow-y:auto;}
+    .earea:empty::before{content:attr(data-placeholder);color:var(--gray);pointer-events:none;}
+    .earea h1{font-size:1.5rem;font-weight:700;margin:14px 0 8px;color:var(--text);}
+    .earea h2{font-size:1.2rem;font-weight:700;margin:12px 0 7px;color:var(--text);}
+    .earea h3{font-size:1rem;font-weight:700;margin:10px 0 5px;color:var(--text);}
+    .earea p{margin-bottom:10px;}
+    .earea blockquote{border-left:4px solid var(--accent);padding:9px 15px;margin:10px 0;background:var(--bg3);border-radius:0 6px 6px 0;font-style:italic;color:var(--text2);}
+    .earea ul,.earea ol{margin:9px 0 12px 22px;}
+    .earea li{margin-bottom:4px;}
+    .earea a{color:var(--accent);text-decoration:underline;}
+    .earea code{font-family:'IBM Plex Mono',monospace;background:var(--bg3);padding:1px 5px;border-radius:3px;font-size:.84em;color:var(--accent);}
+    .earea hr{border:none;border-top:1px solid var(--border);margin:16px 0;}
+    .efooter{background:var(--toolbar);border-top:1px solid var(--editor-border);padding:7px 13px;display:flex;justify-content:space-between;align-items:center;}
+    .efhint{font-size:.7rem;color:var(--gray);}
+    .efstats{display:flex;gap:12px;}
+    .efwc,.efrt{font-family:'IBM Plex Mono',monospace;font-size:.68rem;}
+    .efwc{color:var(--gray);}.efrt{color:var(--accent);}
+
+    /* IMAGE */
+    .iupload{border:2px dashed var(--border);border-radius:8px;padding:15px;text-align:center;cursor:pointer;transition:all .3s;position:relative;}
+    .iupload:hover{border-color:var(--accent);}
+    .iupload input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;}
+    .iupload p{font-size:.78rem;color:var(--gray);margin-top:3px;}
+    .iupload .compress-note{font-size:.7rem;color:var(--success);margin-top:2px;}
+    .iprev{margin-top:9px;width:100%;max-height:130px;object-fit:cover;border-radius:6px;display:none;}
 
     /* LIST */
-    .list-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
-    .list-title{font-family:'IBM Plex Mono',monospace;font-size:0.76rem;color:var(--text);letter-spacing:2px;}
-    .add-btn{background:var(--bg3);border:1.5px solid var(--border);color:var(--accent);padding:7px 16px;border-radius:6px;font-size:0.76rem;cursor:pointer;font-family:'IBM Plex Mono',monospace;letter-spacing:1px;transition:all 0.3s;}
-    .add-btn:hover{background:var(--accent);color:var(--bg);border-color:var(--accent);}
-    .item-list{display:flex;flex-direction:column;gap:10px;}
-    .item-row{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;transition:border-color 0.3s;box-shadow:0 1px 4px var(--shadow);}
-    .item-row:hover{border-color:rgba(0,102,204,0.3);}
-    .item-name{font-size:0.9rem;font-weight:600;margin-bottom:2px;}
-    .item-meta{font-size:0.74rem;color:var(--gray);display:flex;gap:10px;align-items:center;}
-    .item-badge{font-family:'IBM Plex Mono',monospace;font-size:0.62rem;padding:2px 8px;border-radius:10px;background:var(--bg3);color:var(--accent);border:1px solid var(--border);}
-    .item-actions{display:flex;gap:7px;}
-    .edit-btn{background:transparent;border:1px solid var(--border);color:var(--gray);padding:5px 12px;border-radius:5px;font-size:0.74rem;cursor:pointer;transition:all 0.3s;}
-    .edit-btn:hover{border-color:var(--accent);color:var(--accent);}
-    .del-btn{background:transparent;border:1px solid rgba(220,38,38,0.3);color:var(--danger);padding:5px 12px;border-radius:5px;font-size:0.74rem;cursor:pointer;transition:all 0.3s;}
-    .del-btn:hover{background:rgba(220,38,38,0.1);}
-    .empty-list{text-align:center;padding:40px;color:var(--gray);font-family:'IBM Plex Mono',monospace;font-size:0.74rem;border:1.5px dashed var(--border);border-radius:8px;}
+    .lh{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+    .lt{font-family:'IBM Plex Mono',monospace;font-size:.74rem;color:var(--text);letter-spacing:2px;}
+    .lactions{display:flex;gap:8px;align-items:center;}
+    .addbtn{background:var(--bg3);border:1.5px solid var(--border);color:var(--accent);padding:6px 14px;border-radius:6px;font-size:.74rem;cursor:pointer;font-family:'IBM Plex Mono',monospace;letter-spacing:1px;transition:all .3s;}
+    .addbtn:hover{background:var(--accent);color:var(--bg);border-color:var(--accent);}
+    .bulkbtn{background:transparent;border:1px solid rgba(220,38,38,.3);color:var(--danger);padding:6px 14px;border-radius:6px;font-size:.74rem;cursor:pointer;transition:all .3s;display:none;}
+    .bulkbtn:hover{background:rgba(220,38,38,.1);}
+    .ilist{display:flex;flex-direction:column;gap:9px;}
+    .irow{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:13px 16px;display:flex;justify-content:space-between;align-items:center;transition:border-color .3s;box-shadow:0 1px 4px var(--shadow);}
+    .irow:hover{border-color:rgba(0,102,204,.25);}
+    .irow.selected{border-color:var(--accent);background:var(--bg3);}
+    .irow-left{display:flex;align-items:center;gap:11px;}
+    .irow-check{width:16px;height:16px;cursor:pointer;accent-color:var(--accent);}
+    .iname{font-size:.88rem;font-weight:600;margin-bottom:2px;}
+    .imeta{font-size:.72rem;color:var(--gray);display:flex;gap:9px;flex-wrap:wrap;}
+    .ibadge{font-family:'IBM Plex Mono',monospace;font-size:.6rem;padding:2px 7px;border-radius:10px;background:var(--bg3);color:var(--accent);border:1px solid var(--border);}
+    .dbadge{background:rgba(240,180,41,.12);color:var(--warn);border-color:rgba(240,180,41,.3);}
+    .ibtns{display:flex;gap:6px;}
+    .editbtn{background:transparent;border:1px solid var(--border);color:var(--gray);padding:4px 11px;border-radius:5px;font-size:.72rem;cursor:pointer;transition:all .3s;}
+    .editbtn:hover{border-color:var(--accent);color:var(--accent);}
+    .delbtn{background:transparent;border:1px solid rgba(220,38,38,.3);color:var(--danger);padding:4px 11px;border-radius:5px;font-size:.72rem;cursor:pointer;transition:all .3s;}
+    .delbtn:hover{background:rgba(220,38,38,.1);}
+    .emptylist{text-align:center;padding:36px;color:var(--gray);font-family:'IBM Plex Mono',monospace;font-size:.72rem;border:1.5px dashed var(--border);border-radius:8px;}
 
-    @media(max-width:640px){.form-grid{grid-template-columns:1fr;}.dash-header{flex-wrap:wrap;gap:10px;}}
+    /* PREVIEW MODAL */
+    .prevmodal{display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);overflow-y:auto;padding:30px 18px;}
+    .prevmodal.open{display:flex;align-items:flex-start;justify-content:center;}
+    .previnner{max-width:740px;width:100%;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:36px;position:relative;margin:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+    .prevclose{position:absolute;top:14px;right:14px;background:var(--bg3);border:1px solid var(--border);color:var(--gray);width:30px;height:30px;border-radius:50%;font-size:.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .3s;}
+    .prevclose:hover{color:var(--accent);border-color:var(--accent);}
+    .prevtag{font-family:'IBM Plex Mono',monospace;font-size:.66rem;color:var(--accent);letter-spacing:2px;margin-bottom:9px;display:block;}
+    .prevtitle{font-size:1.6rem;font-weight:700;margin-bottom:8px;line-height:1.3;}
+    .prevmeta{font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:var(--gray);margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border);}
+    .prevcontent{font-size:.94rem;color:var(--text2);line-height:1.9;}
+    .prevcontent h1,.prevcontent h2,.prevcontent h3{color:var(--text);margin:14px 0 8px;}
+    .prevcontent p{margin-bottom:12px;}
+    .prevcontent blockquote{border-left:4px solid var(--accent);padding:9px 15px;margin:12px 0;background:var(--bg3);border-radius:0 6px 6px 0;font-style:italic;}
+
+    /* COMMENTS */
+    .cfilt{display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap;}
+    .cfbtn{font-family:'IBM Plex Mono',monospace;font-size:.66rem;padding:4px 13px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--gray);cursor:pointer;transition:all .3s;}
+    .cfbtn.active,.cfbtn:hover{border-color:var(--accent);color:var(--accent);background:var(--bg3);}
+    .citem{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:15px 17px;box-shadow:0 1px 4px var(--shadow);}
+    .cheader{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px;gap:9px;}
+    .cinfo-name{font-weight:600;font-size:.86rem;}
+    .cinfo-meta{font-size:.7rem;color:var(--gray);font-family:'IBM Plex Mono',monospace;}
+    .ctext{font-size:.83rem;color:var(--text2);line-height:1.6;margin-bottom:11px;}
+    .cbtns{display:flex;gap:6px;flex-wrap:wrap;}
+    .appbtn{background:rgba(22,163,74,.1);border:1px solid rgba(22,163,74,.3);color:var(--success);padding:4px 11px;border-radius:5px;font-size:.72rem;cursor:pointer;transition:all .3s;}
+    .appbtn:hover{background:rgba(22,163,74,.2);}
+    .rejbtn{background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.3);color:var(--danger);padding:4px 11px;border-radius:5px;font-size:.72rem;cursor:pointer;transition:all .3s;}
+    .rejbtn:hover{background:rgba(220,38,38,.15);}
+    .sbadge{font-family:'IBM Plex Mono',monospace;font-size:.6rem;padding:2px 9px;border-radius:10px;}
+    .sp{background:rgba(234,179,8,.12);color:var(--warn);border:1px solid rgba(234,179,8,.3);}
+    .sa{background:rgba(22,163,74,.1);color:var(--success);border:1px solid rgba(22,163,74,.3);}
+    .sr{background:rgba(220,38,38,.08);color:var(--danger);border:1px solid rgba(220,38,38,.3);}
+
+    @media(max-width:640px){.fg{grid-template-columns:1fr;}.dh{gap:9px;}.analytics-grid{grid-template-columns:1fr;}}
   </style>
 </head>
 <body>
 
-<!-- LOGIN -->
 <div id="loginScreen">
-  <div class="login-box">
-    <div class="login-logo">MM // ADMIN</div>
-    <div class="login-sub">mmohamud.me control panel</div>
+  <div class="lbox">
+    <div class="llogo">MM // ADMIN</div>
+    <div class="lsub">mmohamud.me control panel</div>
     <input type="password" id="pwInput" placeholder="Enter password" onkeydown="if(event.key==='Enter')login()"/>
-    <button class="login-btn" onclick="login()">Access Dashboard</button>
-    <div class="login-err" id="loginErr">Incorrect password.</div>
-    <div class="login-theme"><button onclick="toggleTheme()"><span id="loginThemeIcon">🌙</span> Switch theme</button></div>
+    <button class="lbtn" onclick="login()">Access Dashboard</button>
+    <div class="lerr" id="lerr">Incorrect password.</div>
+    <button class="ltheme" onclick="toggleTheme()"><span id="lti">🌙</span> Switch theme</button>
   </div>
 </div>
 
-<!-- DASHBOARD -->
 <div id="dashboard">
-  <div class="dash-header">
-    <div class="dash-logo">MM // ADMIN</div>
-    <div class="dash-nav">
-      <button class="dash-tab active" onclick="switchPanel('projects',this)">Projects</button>
-      <button class="dash-tab" onclick="switchPanel('blogs',this)">Blog Posts</button>
+  <div class="dh">
+    <div class="dlogo">MM // ADMIN</div>
+    <div class="dnav">
+      <button class="dtab active" onclick="switchPanel('projects',this)">Projects</button>
+      <button class="dtab" onclick="switchPanel('blogs',this)">Blog Posts</button>
+      <button class="dtab" id="ctab" onclick="switchPanel('comments',this)">Comments</button>
+      <button class="dtab" onclick="switchPanel('analytics',this)">Analytics</button>
     </div>
-    <div class="dash-actions">
-      <button class="theme-btn" onclick="toggleTheme()"><span id="themeIcon">🌙</span><span id="themeLabel">Dark</span></button>
-      <a href="index.html" target="_blank" class="view-site">View Site</a>
-      <button class="logout-btn" onclick="logout()">Logout</button>
+    <div class="dactions">
+      <button class="tbtn" onclick="toggleTheme()"><span id="ti">🌙</span><span id="tl">Dark</span></button>
+      <a href="index.html" target="_blank" class="vsite">View Site</a>
+      <button class="lobtn" onclick="logout()">Logout</button>
     </div>
   </div>
 
-  <div class="dash-body">
-    <div class="sb-status" id="sbStatus">
-      <div class="sb-dot local" id="sbDot"></div>
-      <span id="sbText">Using localStorage (local only)</span>
-      <span style="margin-left:auto;font-size:0.66rem;color:var(--gray)">Add Supabase credentials in index.html to enable cloud storage</span>
-    </div>
+  <div class="dbody">
+    <div class="sbstat" id="sbstat"><div class="sbdot off" id="sbdot"></div><span id="sbtext">Using localStorage</span></div>
+    <div class="srow" id="srow"></div>
 
-    <div class="stats-row" id="statsRow"></div>
-
-    <!-- PROJECTS PANEL -->
+    <!-- PROJECTS -->
     <div class="panel active" id="projectsPanel">
-      <div class="form-card" id="projectForm" style="display:none">
-        <div class="form-title" id="projectFormTitle">// Add New Project</div>
-        <div class="form-grid">
-          <div class="form-group"><label>Project Title *</label><input type="text" id="ptitle" placeholder="e.g. Security+ Exam Prep App"/></div>
-          <div class="form-group"><label>Category *</label><select id="pcat"><option value="cybersecurity">Cybersecurity</option><option value="data">Data Analytics</option><option value="web">Web Dev</option><option value="education">Education</option></select></div>
+      <div class="fcard" id="pform" style="display:none">
+        <div class="ftitle"><span id="pftitle">// Add New Project</span></div>
+        <div class="fg">
+          <div class="fgroup"><label>Project Title *</label><input type="text" id="pt" placeholder="e.g. Security+ Exam Prep App"/></div>
+          <div class="fgroup"><label>Category *</label><select id="pc"><option value="cybersecurity">Cybersecurity</option><option value="data">Data Analytics</option><option value="web">Web Dev</option><option value="education">Education</option></select></div>
         </div>
-        <div class="form-grid full" style="margin-top:14px">
-          <div class="form-group"><label>Short Description *</label><textarea id="pdesc" placeholder="Clear concise summary..."></textarea></div>
-          <div class="form-group"><label>Your Role and Skills Used</label><textarea id="prole" placeholder="What you specifically did and tools used..."></textarea></div>
-          <div class="form-group"><label>The Problem or Goal</label><textarea id="pproblem" placeholder="What issue were you trying to solve?"></textarea></div>
-          <div class="form-group"><label>The Process and Solution</label><textarea id="pprocess" placeholder="Your problem-solving process, decisions, challenges..."></textarea></div>
-          <div class="form-group"><label>Impact and Results</label><textarea id="pimpact" placeholder="Use metrics if possible e.g. reduced load time by 20%..."></textarea></div>
+        <div class="fg full" style="margin-top:12px">
+          <div class="fgroup"><label>Short Description *</label><textarea id="pd" placeholder="Clear concise summary..."></textarea></div>
+          <div class="fgroup"><label>Your Role and Skills Used</label><textarea id="pr" placeholder="What you specifically did..."></textarea></div>
+          <div class="fgroup"><label>The Problem or Goal</label><textarea id="pp" placeholder="What issue were you solving?"></textarea></div>
+          <div class="fgroup"><label>The Process and Solution</label><textarea id="ppr" placeholder="How you solved it..."></textarea></div>
+          <div class="fgroup"><label>Impact and Results</label><textarea id="pi" placeholder="Metrics and outcomes..."></textarea></div>
         </div>
-        <div class="form-grid" style="margin-top:14px">
-          <div class="form-group"><label>Skills (comma separated)</label><input type="text" id="pskills" placeholder="Python, React, SQL"/></div>
-          <div class="form-group"><label>Live Demo URL</label><input type="url" id="plive" placeholder="https://"/></div>
-          <div class="form-group"><label>GitHub URL</label><input type="url" id="pgithub" placeholder="https://github.com/"/></div>
-          <div class="form-group"><label>YouTube Video ID</label><input type="text" id="pyt" placeholder="e.g. dQw4w9WgXcQ"/><span class="form-hint">The part after youtube.com/watch?v=</span></div>
-          <div class="form-group"><label>Image URL</label><input type="url" id="pimgurl" placeholder="https://... or upload below"/></div>
+        <div class="fg" style="margin-top:12px">
+          <div class="fgroup"><label>Skills (comma separated)</label><input type="text" id="psk" placeholder="Python, React, SQL"/></div>
+          <div class="fgroup"><label>Tags (comma separated)</label><input type="text" id="ptg" placeholder="security, python, dashboard"/><span class="fhint">Used for search and filtering</span></div>
+          <div class="fgroup"><label>Live Demo URL</label><input type="url" id="pl" placeholder="https://"/></div>
+          <div class="fgroup"><label>GitHub URL</label><input type="url" id="pg" placeholder="https://github.com/"/></div>
+          <div class="fgroup"><label>YouTube Video ID</label><input type="text" id="py" placeholder="e.g. dQw4w9WgXcQ"/></div>
+          <div class="fgroup"><label>Image URL</label><input type="url" id="piu" placeholder="https://..."/></div>
         </div>
-        <div class="form-group" style="margin-top:14px">
-          <label>Or Upload Image</label>
-          <div class="img-upload">
-            <input type="file" accept="image/*" onchange="handleImg(this,'pimgData','pimgPreview','pimgurl')"/>
-            <div>📁</div>
-            <p>Click to upload screenshot or mockup</p>
-          </div>
-          <img id="pimgPreview" class="img-preview"/>
-          <input type="hidden" id="pimgData"/>
+        <div class="fgroup" style="margin-top:12px">
+          <label>Or Upload Image (auto-compressed)</label>
+          <div class="iupload"><input type="file" accept="image/*" onchange="handleImg(this,'pid','piprev','piu')"/><div>📁</div><p>Click to upload</p><p class="compress-note">Images auto-compressed to under 500KB</p></div>
+          <img id="piprev" class="iprev"/><input type="hidden" id="pid"/>
         </div>
-        <div class="form-group" style="margin-top:14px">
-          <div class="toggle-wrap">
-            <label class="toggle"><input type="checkbox" id="pfeatured"/><span class="toggle-slider"></span></label>
-            <span class="toggle-label">Mark as Featured (shows gold badge and sorts to top)</span>
-          </div>
+        <div class="fgroup" style="margin-top:12px">
+          <div class="toggle-wrap"><label class="toggle"><input type="checkbox" id="pft"/><span class="tslider"></span></label><span class="tlabel">Mark as Featured (gold badge, sorted to top)</span></div>
         </div>
-        <div class="form-actions">
-          <button class="save-btn" onclick="saveProject()">Save Project</button>
-          <button class="cancel-btn" onclick="cancelForm('projectForm')">Cancel</button>
-          <span class="success-msg" id="pSuccess">Saved!</span>
-          <span class="error-msg" id="pError"></span>
+        <div class="factions">
+          <button class="savebtn" onclick="saveProject()">Publish Project</button>
+          <button class="cancelbtn" onclick="cancelForm('pform')">Cancel</button>
+          <span class="sucmsg" id="psuc">Saved!</span>
+          <span class="errmsg" id="perr"></span>
         </div>
       </div>
-      <div class="list-header"><div class="list-title">// Projects</div><button class="add-btn" onclick="showProjectForm()">+ Add Project</button></div>
-      <div class="item-list" id="projectList"></div>
+      <div class="lh">
+        <div class="lt">// Projects</div>
+        <div class="lactions">
+          <button class="bulkbtn" id="pbulk" onclick="bulkDelete('projects')">Delete Selected</button>
+          <button class="addbtn" onclick="showProjectForm()">+ Add Project</button>
+        </div>
+      </div>
+      <div class="ilist" id="plist"></div>
     </div>
 
-    <!-- BLOGS PANEL -->
+    <!-- BLOGS -->
     <div class="panel" id="blogsPanel">
-      <div class="form-card" id="blogForm" style="display:none">
-        <div class="form-title" id="blogFormTitle">// Write New Post</div>
-        <div class="form-grid">
-          <div class="form-group"><label>Post Title *</label><input type="text" id="btitle" placeholder="e.g. Why IT Support is the Best Entry into Cybersecurity"/></div>
-          <div class="form-group"><label>Category *</label><select id="bcat"><option>Cybersecurity</option><option>Career</option><option>Education</option><option>Technology</option><option>Community</option></select></div>
+      <div class="fcard" id="bform" style="display:none">
+        <div class="ftitle">
+          <span id="bftitle">// Write New Post</span>
+          <span class="autosave-status" id="autosaveStatus">Autosave ready</span>
         </div>
-        <div class="form-grid full" style="margin-top:14px">
-          <div class="form-group"><label>Short Excerpt (shown on card) *</label><textarea id="bexc" placeholder="2-3 sentence summary shown on the blog card..."></textarea></div>
-          <div class="form-group"><label>Full Post Content *</label><textarea id="bcontent" class="tall" placeholder="Write your full blog post here..."></textarea></div>
-          <div class="form-group"><label>Publish Date</label><input type="text" id="bdate" placeholder="e.g. April 2026"/></div>
-          <div class="form-group"><label>Cover Image URL</label><input type="url" id="bimgurl" placeholder="https://... or upload below"/></div>
+        <div class="fg">
+          <div class="fgroup"><label>Post Title *</label><input type="text" id="bt" placeholder="e.g. Why IT Support is the Best Entry into Cybersecurity" oninput="scheduleAutosave()"/></div>
+          <div class="fgroup"><label>Category *</label><select id="bc" onchange="scheduleAutosave()"><option>Cybersecurity</option><option>Career</option><option>Education</option><option>Technology</option><option>Community</option></select></div>
+          <div class="fgroup"><label>Publish Date</label><input type="text" id="bd" placeholder="e.g. April 2026"/></div>
+          <div class="fgroup"><label>Cover Image URL</label><input type="url" id="biu" placeholder="https://..." oninput="scheduleAutosave()"/></div>
+          <div class="fgroup"><label>Tags (comma separated)</label><input type="text" id="btg" placeholder="security, career, tips" oninput="scheduleAutosave()"/><span class="fhint">Shown as clickable pills on blog cards</span></div>
         </div>
-        <div class="form-group" style="margin-top:14px">
-          <label>Or Upload Cover Image</label>
-          <div class="img-upload">
-            <input type="file" accept="image/*" onchange="handleImg(this,'bimgData','bimgPreview','bimgurl')"/>
-            <div>📁</div>
-            <p>Click to upload a cover image for this post</p>
+        <div class="fgroup" style="margin-top:12px">
+          <label>Short Excerpt (shown on card) *</label>
+          <textarea style="background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.86rem;outline:none;transition:border-color .3s;width:100%;min-height:75px;resize:vertical;margin-top:4px;" id="be" placeholder="2-3 sentence summary shown on the blog card..." oninput="scheduleAutosave()"></textarea>
+        </div>
+        <div class="fgroup" style="margin-top:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;">
+            <label>Full Post Content *</label>
+            <div style="display:flex;gap:10px;align-items:center;">
+              <span class="efwc" id="ewc">0 words</span>
+              <span class="efrt" id="ert">0 min read</span>
+            </div>
           </div>
-          <img id="bimgPreview" class="img-preview"/>
-          <input type="hidden" id="bimgData"/>
+          <div class="ewrap">
+            <div class="etb">
+              <select class="tsel" onchange="execCmd('formatBlock',this.value);this.value=''">
+                <option value="">Paragraph</option>
+                <option value="h1">Heading 1</option>
+                <option value="h2">Heading 2</option>
+                <option value="h3">Heading 3</option>
+                <option value="blockquote">Blockquote</option>
+                <option value="pre">Code Block</option>
+              </select>
+              <div class="tsep"></div>
+              <button class="tbtn2" onclick="execCmd('bold')" title="Bold"><b>B</b></button>
+              <button class="tbtn2" onclick="execCmd('italic')" title="Italic"><i>I</i></button>
+              <button class="tbtn2" onclick="execCmd('underline')" title="Underline"><u>U</u></button>
+              <button class="tbtn2" onclick="execCmd('strikeThrough')" title="Strike"><s>S</s></button>
+              <div class="tsep"></div>
+              <button class="tbtn2" onclick="execCmd('insertUnorderedList')">• List</button>
+              <button class="tbtn2" onclick="execCmd('insertOrderedList')">1. List</button>
+              <div class="tsep"></div>
+              <button class="tbtn2" onclick="execCmd('justifyLeft')">⬅</button>
+              <button class="tbtn2" onclick="execCmd('justifyCenter')">↔</button>
+              <button class="tbtn2" onclick="execCmd('justifyRight')">➡</button>
+              <div class="tsep"></div>
+              <button class="tbtn2" onclick="insertLink()">🔗 Link</button>
+              <button class="tbtn2" onclick="insertImgInEditor()">🖼 Image</button>
+              <button class="tbtn2" onclick="execCmd('insertHorizontalRule')">— Rule</button>
+              <div class="tsep"></div>
+              <button class="tbtn2" onclick="execCmd('undo')">↩</button>
+              <button class="tbtn2" onclick="execCmd('redo')">↪</button>
+            </div>
+            <div class="earea" id="editor" contenteditable="true" data-placeholder="Start writing your blog post here... Use Heading 2 for main sections to auto-generate a Table of Contents." oninput="onEditorInput()"></div>
+            <div class="efooter">
+              <span class="efhint">Tip: Use Heading 2 for main sections. A Table of Contents auto-generates for posts with 2+ headings.</span>
+            </div>
+          </div>
         </div>
-        <div class="form-actions">
-          <button class="save-btn" onclick="saveBlog()">Publish Post</button>
-          <button class="cancel-btn" onclick="cancelForm('blogForm')">Cancel</button>
-          <span class="success-msg" id="bSuccess">Published!</span>
-          <span class="error-msg" id="bError"></span>
+        <div class="fgroup" style="margin-top:12px">
+          <label>Or Upload Cover Image (auto-compressed)</label>
+          <div class="iupload"><input type="file" accept="image/*" onchange="handleImg(this,'bid','biprev','biu')"/><div>📁</div><p>Click to upload cover image</p><p class="compress-note">Images auto-compressed to under 500KB</p></div>
+          <img id="biprev" class="iprev"/><input type="hidden" id="bid"/>
+        </div>
+        <div class="factions">
+          <button class="savebtn" onclick="saveBlog(false)">Publish Post</button>
+          <button class="draftbtn" onclick="saveBlog(true)">Save as Draft</button>
+          <button class="prevbtn" onclick="previewBlog()">👁 Preview</button>
+          <button class="cancelbtn" onclick="cancelForm('bform')">Cancel</button>
+          <span class="sucmsg" id="bsuc">Saved!</span>
+          <span class="errmsg" id="berr"></span>
         </div>
       </div>
-      <div class="list-header"><div class="list-title">// Blog Posts</div><button class="add-btn" onclick="showBlogForm()">+ Write Post</button></div>
-      <div class="item-list" id="blogList"></div>
+      <div class="lh">
+        <div class="lt">// Blog Posts</div>
+        <div class="lactions">
+          <button class="bulkbtn" id="bbulk" onclick="bulkDelete('blogs')">Delete Selected</button>
+          <button class="addbtn" onclick="showBlogForm()">+ Write Post</button>
+        </div>
+      </div>
+      <div class="ilist" id="blist"></div>
     </div>
+
+    <!-- COMMENTS -->
+    <div class="panel" id="commentsPanel">
+      <div class="lh"><div class="lt">// Comments</div></div>
+      <div class="cfilt">
+        <button class="cfbtn active" onclick="filterComments('all',this)">All</button>
+        <button class="cfbtn" onclick="filterComments('pending',this)">Pending</button>
+        <button class="cfbtn" onclick="filterComments('approved',this)">Approved</button>
+        <button class="cfbtn" onclick="filterComments('rejected',this)">Rejected</button>
+      </div>
+      <div class="ilist" id="clist"></div>
+    </div>
+
+    <!-- ANALYTICS -->
+    <div class="panel" id="analyticsPanel">
+      <div class="lh"><div class="lt">// Analytics Dashboard</div></div>
+      <div class="analytics-grid">
+        <div class="chart-card">
+          <div class="chart-title">Top Projects by Views</div>
+          <div class="top-list" id="topProjects"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Top Blog Posts by Views</div>
+          <div class="top-list" id="topBlogs"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Projects by Category</div>
+          <canvas id="catChart" height="180"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Content Overview</div>
+          <canvas id="overviewChart" height="180"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PREVIEW MODAL -->
+<div class="prevmodal" id="prevmodal">
+  <div class="previnner">
+    <button class="prevclose" onclick="closePreview()">×</button>
+    <span class="prevtag" id="prevtag"></span>
+    <div class="prevtitle" id="prevtitle"></div>
+    <div class="prevmeta" id="prevmeta"></div>
+    <div class="prevcontent" id="prevcontent"></div>
   </div>
 </div>
 
 <script>
-// ===========================
-// SUPABASE (paste same creds)
-// ===========================
-const SUPABASE_URL = 'https://dmnrtvkauymnzytqkmvc.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtbnJ0dmthdXltbnp5dHFrbXZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4MDg0OTksImV4cCI6MjA5MDM4NDQ5OX0.mEFYJYjvsr2pEgCm5pSMZ2xCYVO8XRS8oiRCkNu-fUM';
-const USE_SUPABASE = SUPABASE_URL && SUPABASE_KEY;
-let sb = null;
-if(USE_SUPABASE){sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);}
+const SUPABASE_URL='';
+const SUPABASE_KEY='';
+const USE_SUPABASE=SUPABASE_URL&&SUPABASE_KEY;
+let sb=null;
+if(USE_SUPABASE)sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-// ===========================
+const PASS='kulan2026';
+let editPI=-1,editBI=-1,allComments=[],cmtFilter='all';
+let autosaveTimer=null;
+let catChartInst=null,overviewChartInst=null;
+
 // THEME
-// ===========================
-const PASS = 'kulan2026';
-function getAutoTheme(){const h=new Date().getHours();return(h>=18||h<6)?'dark':'light';}
+function getAT(){const h=new Date().getHours();return(h>=18||h<6)?'dark':'light';}
 function applyTheme(t){
   document.documentElement.setAttribute('data-theme',t);
-  const icon=t==='dark'?'☀️':'🌙';
-  const label=t==='dark'?'Light':'Dark';
-  ['themeIcon','loginThemeIcon'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=icon;});
-  const tl=document.getElementById('themeLabel');if(tl)tl.textContent=label;
-  localStorage.setItem('mm_admin_theme',t);
+  const ic=t==='dark'?'☀️':'🌙';
+  ['ti','lti'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=ic;});
+  const tl=document.getElementById('tl');if(tl)tl.textContent=t==='dark'?'Light':'Dark';
+  localStorage.setItem('mm_at',t);
 }
 function toggleTheme(){applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');}
-function initTheme(){const s=localStorage.getItem('mm_admin_theme');applyTheme(s||getAutoTheme());}
+function initTheme(){applyTheme(localStorage.getItem('mm_at')||getAT());}
 initTheme();
 
-// ===========================
 // AUTH
-// ===========================
 function login(){
-  const pw=document.getElementById('pwInput').value;
-  if(pw===PASS){
+  if(document.getElementById('pwInput').value===PASS){
     document.getElementById('loginScreen').style.display='none';
     document.getElementById('dashboard').style.display='block';
-    checkSupabase();
-    renderAll();
-  } else {
-    document.getElementById('loginErr').style.display='block';
-  }
+    checkSB();renderAll();
+  }else{document.getElementById('lerr').style.display='block';}
 }
 function logout(){document.getElementById('dashboard').style.display='none';document.getElementById('loginScreen').style.display='flex';document.getElementById('pwInput').value='';}
 
-// ===========================
-// SUPABASE STATUS
-// ===========================
-async function checkSupabase(){
-  const dot=document.getElementById('sbDot');
-  const text=document.getElementById('sbText');
-  if(USE_SUPABASE){
-    try{await sb.from('projects').select('count',{count:'exact',head:true});dot.className='sb-dot connected';text.textContent='Connected to Supabase (cloud storage active)';}
-    catch{dot.className='sb-dot local';text.textContent='Supabase connection failed — using localStorage';}
-  }
+async function checkSB(){
+  const dot=document.getElementById('sbdot'),txt=document.getElementById('sbtext');
+  if(USE_SUPABASE){try{await sb.from('projects').select('count',{count:'exact',head:true});dot.className='sbdot on';txt.textContent='Connected to Supabase';}catch{dot.className='sbdot off';txt.textContent='Supabase error — using localStorage';}}
 }
 
-// ===========================
 // DATA
-// ===========================
 function getP(){try{return JSON.parse(localStorage.getItem('mm_projects')||'[]');}catch{return[];}}
 function getB(){try{return JSON.parse(localStorage.getItem('mm_blogs')||'[]');}catch{return[];}}
 function saveP(d){localStorage.setItem('mm_projects',JSON.stringify(d));}
 function saveB(d){localStorage.setItem('mm_blogs',JSON.stringify(d));}
+async function fetchAP(){if(USE_SUPABASE){const{data}=await sb.from('projects').select('*').order('created_at',{ascending:false});return data||[];}return getP();}
+async function fetchAB(){if(USE_SUPABASE){const{data}=await sb.from('blogs').select('*').order('created_at',{ascending:false});return data||[];}return getB();}
+async function fetchAC(){if(USE_SUPABASE){const{data}=await sb.from('comments').select('*').order('created_at',{ascending:false});return data||[];}return[];}
 
-async function fetchProjects(){
-  if(USE_SUPABASE){const{data}=await sb.from('projects').select('*').order('featured',{ascending:false}).order('created_at',{ascending:false});return data||[];}
-  return getP();
+// PANELS
+function switchPanel(p,btn){
+  document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.dtab').forEach(x=>x.classList.remove('active'));
+  document.getElementById(p+'Panel').classList.add('active');
+  btn.classList.add('active');
+  if(p==='comments')renderComments();
+  if(p==='analytics')renderAnalytics();
 }
-async function fetchBlogs(){
-  if(USE_SUPABASE){const{data}=await sb.from('blogs').select('*').order('created_at',{ascending:false});return data||[];}
-  return getB();
-}
+function cancelForm(id){document.getElementById(id).style.display='none';editPI=-1;editBI=-1;clearAutosave();}
 
-// ===========================
-// IMAGE
-// ===========================
-function handleImg(input,dataId,previewId,urlId){
-  const file=input.files[0];if(!file)return;
+// IMAGE COMPRESSION
+function compressImage(file,maxSizeKB,callback){
   const reader=new FileReader();
   reader.onload=e=>{
-    document.getElementById(dataId).value=e.target.result;
-    const prev=document.getElementById(previewId);
-    prev.src=e.target.result;prev.style.display='block';
+    const img=new Image();
+    img.onload=()=>{
+      let quality=0.8;let w=img.width;let h=img.height;
+      const maxW=1200;if(w>maxW){h=Math.round(h*maxW/w);w=maxW;}
+      const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+      const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,w,h);
+      let result=canvas.toDataURL('image/jpeg',quality);
+      while(result.length>maxSizeKB*1024*1.37&&quality>0.2){quality-=0.1;result=canvas.toDataURL('image/jpeg',quality);}
+      callback(result);
+    };img.src=e.target.result;
+  };reader.readAsDataURL(file);
+}
+
+function handleImg(input,dataId,prevId,urlId){
+  const file=input.files[0];if(!file)return;
+  compressImage(file,500,result=>{
+    document.getElementById(dataId).value=result;
+    const prev=document.getElementById(prevId);prev.src=result;prev.style.display='block';
     document.getElementById(urlId).value='';
-  };
-  reader.readAsDataURL(file);
+  });
 }
 
-// ===========================
-// PANELS
-// ===========================
-let editPIdx=-1,editBIdx=-1;
-
-function switchPanel(panel,btn){
-  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.dash-tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById(panel+'Panel').classList.add('active');
-  btn.classList.add('active');
+// EDITOR
+function execCmd(cmd,val=null){document.getElementById('editor').focus();document.execCommand(cmd,false,val);onEditorInput();}
+function insertLink(){const url=prompt('Enter URL:');if(url)execCmd('createLink',url);}
+function insertImgInEditor(){const url=prompt('Enter image URL:');if(url)execCmd('insertImage',url);}
+function onEditorInput(){
+  const el=document.getElementById('editor');
+  const words=(el.innerText||'').split(/\s+/).filter(Boolean).length;
+  const rt=Math.max(1,Math.ceil(words/200));
+  document.getElementById('ewc').textContent=words+' words';
+  document.getElementById('ert').textContent=rt+' min read';
+  scheduleAutosave();
 }
 
-function cancelForm(id){document.getElementById(id).style.display='none';editPIdx=-1;editBIdx=-1;}
+// AUTOSAVE
+function scheduleAutosave(){
+  clearTimeout(autosaveTimer);
+  document.getElementById('autosaveStatus').textContent='Saving draft...';
+  document.getElementById('autosaveStatus').className='autosave-status';
+  autosaveTimer=setTimeout(()=>{
+    const draft={title:document.getElementById('bt').value,category:document.getElementById('bc').value,excerpt:document.getElementById('be').value,content:document.getElementById('editor').innerHTML,date:document.getElementById('bd').value,image_url:document.getElementById('biu').value,tags:document.getElementById('btg').value,editIdx:editBI};
+    localStorage.setItem('mm_blog_draft',JSON.stringify(draft));
+    document.getElementById('autosaveStatus').textContent='Draft autosaved ✓';
+    document.getElementById('autosaveStatus').className='autosave-status saved';
+  },2000);
+}
+function clearAutosave(){clearTimeout(autosaveTimer);localStorage.removeItem('mm_blog_draft');}
+function loadDraft(){
+  const d=localStorage.getItem('mm_blog_draft');
+  if(!d)return false;
+  try{const draft=JSON.parse(d);
+    document.getElementById('bt').value=draft.title||'';
+    document.getElementById('bc').value=draft.category||'Cybersecurity';
+    document.getElementById('be').value=draft.excerpt||'';
+    document.getElementById('editor').innerHTML=draft.content||'';
+    document.getElementById('bd').value=draft.date||'';
+    document.getElementById('biu').value=draft.image_url||'';
+    document.getElementById('btg').value=draft.tags||'';
+    onEditorInput();
+    document.getElementById('autosaveStatus').textContent='Draft restored ✓';
+    document.getElementById('autosaveStatus').className='autosave-status saved';
+    return true;
+  }catch{return false;}
+}
 
-function clearProjectForm(){['ptitle','pdesc','prole','pproblem','pprocess','pimpact','pskills','plive','pgithub','pyt','pimgurl','pimgData'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});document.getElementById('pfeatured').checked=false;document.getElementById('pimgPreview').style.display='none';}
-function clearBlogForm(){['btitle','bexc','bcontent','bimgurl','bimgData'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});document.getElementById('bimgPreview').style.display='none';document.getElementById('bdate').value=new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'});}
+// PREVIEW
+function previewBlog(){
+  const title=document.getElementById('bt').value.trim()||'Untitled Post';
+  const cat=document.getElementById('bc').value;
+  const content=document.getElementById('editor').innerHTML;
+  const date=document.getElementById('bd').value||'Draft';
+  const words=(document.getElementById('editor').innerText||'').split(/\s+/).filter(Boolean).length;
+  document.getElementById('prevtag').textContent=cat;
+  document.getElementById('prevtitle').textContent=title;
+  document.getElementById('prevmeta').textContent=date+' · '+Math.max(1,Math.ceil(words/200))+' min read · Preview mode';
+  document.getElementById('prevcontent').innerHTML=content||'<p style="color:var(--gray)">No content yet.</p>';
+  document.getElementById('prevmodal').classList.add('open');
+}
+function closePreview(){document.getElementById('prevmodal').classList.remove('open');}
+document.getElementById('prevmodal').addEventListener('click',function(e){if(e.target===this)closePreview();});
 
-// ===========================
 // PROJECTS
-// ===========================
 function showProjectForm(idx=-1){
-  editPIdx=idx;
-  const form=document.getElementById('projectForm');
-  form.style.display='block';
-  document.getElementById('projectFormTitle').textContent=idx===-1?'// Add New Project':'// Edit Project';
-  clearProjectForm();
+  editPI=idx;
+  const form=document.getElementById('pform');form.style.display='block';
+  document.getElementById('pftitle').textContent=idx===-1?'// Add New Project':'// Edit Project';
+  ['pt','pd','pr','pp','ppr','pi','psk','ptg','pl','pg','py','piu','pid'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});
+  document.getElementById('pft').checked=false;
+  document.getElementById('piprev').style.display='none';
   if(idx>=0){
     const p=getP()[idx];
-    document.getElementById('ptitle').value=p.title||'';
-    document.getElementById('pcat').value=p.category||'cybersecurity';
-    document.getElementById('pdesc').value=p.description||'';
-    document.getElementById('prole').value=p.role||'';
-    document.getElementById('pproblem').value=p.problem||'';
-    document.getElementById('pprocess').value=p.process||'';
-    document.getElementById('pimpact').value=p.impact||'';
-    document.getElementById('pskills').value=p.skills||'';
-    document.getElementById('plive').value=p.live_link||p.liveLink||'';
-    document.getElementById('pgithub').value=p.github_link||p.githubLink||'';
-    document.getElementById('pyt').value=p.youtube_id||p.youtubeId||'';
-    document.getElementById('pimgurl').value=p.image_url||'';
-    document.getElementById('pfeatured').checked=p.featured||false;
-    if(p.image_url||p.image){const prev=document.getElementById('pimgPreview');prev.src=p.image_url||p.image;prev.style.display='block';}
+    document.getElementById('pt').value=p.title||'';
+    document.getElementById('pc').value=p.category||'cybersecurity';
+    document.getElementById('pd').value=p.description||'';
+    document.getElementById('pr').value=p.role||'';
+    document.getElementById('pp').value=p.problem||'';
+    document.getElementById('ppr').value=p.process||'';
+    document.getElementById('pi').value=p.impact||'';
+    document.getElementById('psk').value=p.skills||'';
+    document.getElementById('ptg').value=p.tags||'';
+    document.getElementById('pl').value=p.live_link||'';
+    document.getElementById('pg').value=p.github_link||'';
+    document.getElementById('py').value=p.youtube_id||'';
+    document.getElementById('piu').value=p.image_url||'';
+    document.getElementById('pft').checked=p.featured||false;
+    if(p.image_url){const prev=document.getElementById('piprev');prev.src=p.image_url;prev.style.display='block';}
   }
   form.scrollIntoView({behavior:'smooth'});
 }
 
 async function saveProject(){
-  const title=document.getElementById('ptitle').value.trim();
-  const desc=document.getElementById('pdesc').value.trim();
-  if(!title||!desc){showError('pError','Title and description are required.');return;}
-  const imgUrl=document.getElementById('pimgurl').value.trim()||document.getElementById('pimgData').value||'';
-  const proj={
-    title,description:desc,
-    category:document.getElementById('pcat').value,
-    role:document.getElementById('prole').value.trim(),
-    problem:document.getElementById('pproblem').value.trim(),
-    process:document.getElementById('pprocess').value.trim(),
-    impact:document.getElementById('pimpact').value.trim(),
-    skills:document.getElementById('pskills').value.trim(),
-    live_link:document.getElementById('plive').value.trim(),
-    github_link:document.getElementById('pgithub').value.trim(),
-    youtube_id:document.getElementById('pyt').value.trim(),
-    image_url:imgUrl,
-    featured:document.getElementById('pfeatured').checked,
-    views:0,
-    date:new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'})
-  };
-  if(USE_SUPABASE){
-    try{
-      if(editPIdx>=0){const id=getP()[editPIdx].id;await sb.from('projects').update(proj).eq('id',id);}
-      else{await sb.from('projects').insert([proj]);}
-    }catch(e){showError('pError','Supabase error: '+e.message);return;}
-  } else {
-    const ps=getP();
-    if(editPIdx>=0)ps[editPIdx]={...ps[editPIdx],...proj};
-    else ps.unshift({...proj,id:Date.now().toString()});
-    saveP(ps);
-  }
-  showSuccess('pSuccess');cancelForm('projectForm');renderAll();
+  const title=document.getElementById('pt').value.trim();
+  const desc=document.getElementById('pd').value.trim();
+  if(!title||!desc){showErr('perr','Title and description required.');return;}
+  const imgUrl=document.getElementById('piu').value.trim()||document.getElementById('pid').value||'';
+  const proj={title,description:desc,category:document.getElementById('pc').value,role:document.getElementById('pr').value.trim(),problem:document.getElementById('pp').value.trim(),process:document.getElementById('ppr').value.trim(),impact:document.getElementById('pi').value.trim(),skills:document.getElementById('psk').value.trim(),tags:document.getElementById('ptg').value.trim(),live_link:document.getElementById('pl').value.trim(),github_link:document.getElementById('pg').value.trim(),youtube_id:document.getElementById('py').value.trim(),image_url:imgUrl,featured:document.getElementById('pft').checked,views:0,date:new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'})};
+  if(USE_SUPABASE){try{if(editPI>=0){const id=getP()[editPI].id;await sb.from('projects').update(proj).eq('id',id);}else await sb.from('projects').insert([proj]);}catch(e){showErr('perr','Error: '+e.message);return;}}
+  else{const ps=getP();if(editPI>=0)ps[editPI]={...ps[editPI],...proj};else ps.unshift({...proj,id:Date.now().toString()});saveP(ps);}
+  showSuc('psuc');cancelForm('pform');renderAll();
 }
 
 async function deleteProject(idx){
@@ -417,71 +601,66 @@ async function deleteProject(idx){
   renderAll();
 }
 
-async function renderProjectList(){
-  const ps=await fetchProjects();
-  if(USE_SUPABASE)saveP(ps);
-  const list=document.getElementById('projectList');
-  if(!ps.length){list.innerHTML='<div class="empty-list">// No projects yet.</div>';return;}
+async function renderPList(){
+  const ps=await fetchAP();if(USE_SUPABASE)saveP(ps);
+  const list=document.getElementById('plist');
+  if(!ps.length){list.innerHTML='<div class="emptylist">// No projects yet.</div>';return;}
   list.innerHTML=ps.map((p,i)=>`
-    <div class="item-row">
-      <div>
-        <div class="item-name">${p.featured?'⭐ ':''}${p.title}</div>
-        <div class="item-meta"><span class="item-badge">${p.category}</span> · ${p.date||''} · 👁 ${p.views||0} views</div>
+    <div class="irow" id="pr${i}">
+      <div class="irow-left">
+        <input type="checkbox" class="irow-check" onchange="toggleBulk('projects')" data-idx="${i}"/>
+        <div>
+          <div class="iname">${p.featured?'⭐ ':''}${p.title}</div>
+          <div class="imeta"><span class="ibadge">${p.category}</span><span>👁 ${p.views||0} views</span><span>${p.date||''}</span>${p.tags?`<span class="ibadge">#${p.tags.split(',')[0].trim()}</span>`:''}</div>
+        </div>
       </div>
-      <div class="item-actions">
-        <button class="edit-btn" onclick="showProjectForm(${i})">Edit</button>
-        <button class="del-btn" onclick="deleteProject(${i})">Delete</button>
+      <div class="ibtns">
+        <button class="editbtn" onclick="showProjectForm(${i})">Edit</button>
+        <button class="delbtn" onclick="deleteProject(${i})">Delete</button>
       </div>
     </div>`).join('');
 }
 
-// ===========================
 // BLOGS
-// ===========================
 function showBlogForm(idx=-1){
-  editBIdx=idx;
-  const form=document.getElementById('blogForm');
-  form.style.display='block';
-  document.getElementById('blogFormTitle').textContent=idx===-1?'// Write New Post':'// Edit Post';
-  clearBlogForm();
+  editBI=idx;
+  const form=document.getElementById('bform');form.style.display='block';
+  document.getElementById('bftitle').textContent=idx===-1?'// Write New Post':'// Edit Post';
+  const hasDraft=idx===-1&&localStorage.getItem('mm_blog_draft');
+  if(hasDraft&&confirm('A draft was found. Restore it?')){loadDraft();}
+  else{
+    ['bt','be','biu','bid','btg'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});
+    document.getElementById('editor').innerHTML='';
+    document.getElementById('bd').value=new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'});
+    document.getElementById('autosaveStatus').textContent='Autosave ready';
+    document.getElementById('autosaveStatus').className='autosave-status';
+    onEditorInput();
+  }
   if(idx>=0){
     const b=getB()[idx];
-    document.getElementById('btitle').value=b.title||'';
-    document.getElementById('bcat').value=b.category||'Cybersecurity';
-    document.getElementById('bexc').value=b.excerpt||'';
-    document.getElementById('bcontent').value=b.content||'';
-    document.getElementById('bdate').value=b.date||'';
-    document.getElementById('bimgurl').value=b.image_url||'';
-    if(b.image_url||b.image){const prev=document.getElementById('bimgPreview');prev.src=b.image_url||b.image;prev.style.display='block';}
+    document.getElementById('bt').value=b.title||'';
+    document.getElementById('bc').value=b.category||'Cybersecurity';
+    document.getElementById('be').value=b.excerpt||'';
+    document.getElementById('editor').innerHTML=b.content||'';
+    document.getElementById('bd').value=b.date||'';
+    document.getElementById('biu').value=b.image_url||'';
+    document.getElementById('btg').value=b.tags||'';
+    if(b.image_url){const prev=document.getElementById('biprev');prev.src=b.image_url;prev.style.display='block';}
+    onEditorInput();
   }
   form.scrollIntoView({behavior:'smooth'});
 }
 
-async function saveBlog(){
-  const title=document.getElementById('btitle').value.trim();
-  const exc=document.getElementById('bexc').value.trim();
-  const content=document.getElementById('bcontent').value.trim();
-  if(!title||!exc||!content){showError('bError','Title, excerpt, and content are required.');return;}
-  const imgUrl=document.getElementById('bimgurl').value.trim()||document.getElementById('bimgData').value||'';
-  const post={
-    title,excerpt:exc,content,
-    category:document.getElementById('bcat').value,
-    date:document.getElementById('bdate').value||new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'}),
-    image_url:imgUrl,
-    views:0
-  };
-  if(USE_SUPABASE){
-    try{
-      if(editBIdx>=0){const id=getB()[editBIdx].id;await sb.from('blogs').update(post).eq('id',id);}
-      else{await sb.from('blogs').insert([post]);}
-    }catch(e){showError('bError','Supabase error: '+e.message);return;}
-  } else {
-    const bs=getB();
-    if(editBIdx>=0)bs[editBIdx]={...bs[editBIdx],...post};
-    else bs.unshift({...post,id:Date.now().toString()});
-    saveB(bs);
-  }
-  showSuccess('bSuccess');cancelForm('blogForm');renderAll();
+async function saveBlog(isDraft=false){
+  const title=document.getElementById('bt').value.trim();
+  const exc=document.getElementById('be').value.trim();
+  const content=document.getElementById('editor').innerHTML.trim();
+  if(!title||!exc||!content||content==='<br>'){showErr('berr','Title, excerpt, and content required.');return;}
+  const imgUrl=document.getElementById('biu').value.trim()||document.getElementById('bid').value||'';
+  const post={title,excerpt:exc,content,category:document.getElementById('bc').value,date:document.getElementById('bd').value||new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'}),image_url:imgUrl,tags:document.getElementById('btg').value.trim(),status:isDraft?'draft':'published',views:0};
+  if(USE_SUPABASE){try{if(editBI>=0){const id=getB()[editBI].id;await sb.from('blogs').update(post).eq('id',id);}else await sb.from('blogs').insert([post]);}catch(e){showErr('berr','Error: '+e.message);return;}}
+  else{const bs=getB();if(editBI>=0)bs[editBI]={...bs[editBI],...post};else bs.unshift({...post,id:Date.now().toString()});saveB(bs);}
+  clearAutosave();showSuc('bsuc');cancelForm('bform');renderAll();
 }
 
 async function deleteBlog(idx){
@@ -491,40 +670,129 @@ async function deleteBlog(idx){
   renderAll();
 }
 
-async function renderBlogList(){
-  const bs=await fetchBlogs();
-  if(USE_SUPABASE)saveB(bs);
-  const list=document.getElementById('blogList');
-  if(!bs.length){list.innerHTML='<div class="empty-list">// No blog posts yet.</div>';return;}
+async function renderBList(){
+  const bs=await fetchAB();if(USE_SUPABASE)saveB(bs);
+  const list=document.getElementById('blist');
+  if(!bs.length){list.innerHTML='<div class="emptylist">// No blog posts yet.</div>';return;}
   list.innerHTML=bs.map((b,i)=>`
-    <div class="item-row">
-      <div>
-        <div class="item-name">${b.title}</div>
-        <div class="item-meta"><span class="item-badge">${b.category}</span> · ${b.date} · 👁 ${b.views||0} views</div>
+    <div class="irow" id="br${i}">
+      <div class="irow-left">
+        <input type="checkbox" class="irow-check" onchange="toggleBulk('blogs')" data-idx="${i}"/>
+        <div>
+          <div class="iname">${b.title}</div>
+          <div class="imeta"><span class="ibadge">${b.category}</span>${b.status==='draft'?'<span class="ibadge dbadge">Draft</span>':''}<span>👁 ${b.views||0}</span><span>${b.date}</span>${b.tags?`<span class="ibadge">#${b.tags.split(',')[0].trim()}</span>`:''}</div>
+        </div>
       </div>
-      <div class="item-actions">
-        <button class="edit-btn" onclick="showBlogForm(${i})">Edit</button>
-        <button class="del-btn" onclick="deleteBlog(${i})">Delete</button>
+      <div class="ibtns">
+        <button class="editbtn" onclick="showBlogForm(${i})">Edit</button>
+        <button class="delbtn" onclick="deleteBlog(${i})">Delete</button>
       </div>
     </div>`).join('');
 }
 
-// ===========================
-// STATS
-// ===========================
-async function renderStats(){
-  const ps=getP();const bs=getB();
-  document.getElementById('statsRow').innerHTML=`
-    <div class="stat-box"><div class="stat-box-num">${ps.length}</div><div class="stat-box-label">Projects</div></div>
-    <div class="stat-box"><div class="stat-box-num">${bs.length}</div><div class="stat-box-label">Blog Posts</div></div>
-    <div class="stat-box"><div class="stat-box-num">${ps.filter(p=>p.featured).length}</div><div class="stat-box-label">Featured</div></div>
-    <div class="stat-box"><div class="stat-box-num">${ps.reduce((a,p)=>a+(p.views||0),0)+bs.reduce((a,b)=>a+(b.views||0),0)}</div><div class="stat-box-label">Total Views</div></div>`;
+// BULK DELETE
+function toggleBulk(type){
+  const checks=document.querySelectorAll(`#${type==='projects'?'p':'b'}list .irow-check:checked`);
+  const btn=document.getElementById(type==='projects'?'pbulk':'bbulk');
+  btn.style.display=checks.length?'block':'none';
 }
 
-function showSuccess(id){const el=document.getElementById(id);el.style.display='inline';setTimeout(()=>el.style.display='none',2500);}
-function showError(id,msg){const el=document.getElementById(id);el.textContent=msg;el.style.display='inline';setTimeout(()=>el.style.display='none',4000);}
+async function bulkDelete(type){
+  const list=document.getElementById(type==='projects'?'plist':'blist');
+  const checks=list.querySelectorAll('.irow-check:checked');
+  if(!checks.length)return;
+  if(!confirm(`Delete ${checks.length} selected item(s)?`))return;
+  const indices=Array.from(checks).map(c=>parseInt(c.dataset.idx)).sort((a,b)=>b-a);
+  if(type==='projects'){
+    const ps=getP();
+    for(const idx of indices){if(USE_SUPABASE)await sb.from('projects').delete().eq('id',ps[idx].id);ps.splice(idx,1);}
+    saveP(ps);
+  } else {
+    const bs=getB();
+    for(const idx of indices){if(USE_SUPABASE)await sb.from('blogs').delete().eq('id',bs[idx].id);bs.splice(idx,1);}
+    saveB(bs);
+  }
+  document.getElementById(type==='projects'?'pbulk':'bbulk').style.display='none';
+  renderAll();
+}
 
-async function renderAll(){renderStats();await renderProjectList();await renderBlogList();}
+// COMMENTS
+async function renderComments(){
+  allComments=await fetchAC();updateCBadge();filterComments(cmtFilter);
+}
+function filterComments(status,btn){
+  cmtFilter=status;
+  if(btn){document.querySelectorAll('.cfbtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+  const list=document.getElementById('clist');
+  const filtered=status==='all'?allComments:allComments.filter(c=>c.status===status);
+  if(!filtered.length){list.innerHTML='<div class="emptylist">// No comments found.</div>';return;}
+  list.innerHTML=filtered.map((c,i)=>`
+    <div class="citem">
+      <div class="cheader">
+        <div><div class="cinfo-name">${c.name} <span style="font-weight:400;color:var(--gray);font-size:.78rem;">&lt;${c.email}&gt;</span></div><div class="cinfo-meta">${c.blog_id||'?'} · ${c.created_at?new Date(c.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):''}</div></div>
+        <span class="sbadge s${c.status[0]}">${c.status}</span>
+      </div>
+      <div class="ctext">${c.content}</div>
+      <div class="cbtns">
+        ${c.status!=='approved'?`<button class="appbtn" onclick="updateComment('${c.id}',${allComments.indexOf(c)},'approved')">✓ Approve</button>`:''}
+        ${c.status!=='rejected'?`<button class="rejbtn" onclick="updateComment('${c.id}',${allComments.indexOf(c)},'rejected')">✗ Reject</button>`:''}
+        <button class="delbtn" onclick="deleteComment('${c.id}',${allComments.indexOf(c)})">Delete</button>
+      </div>
+    </div>`).join('');
+}
+async function updateComment(id,idx,status){
+  if(USE_SUPABASE)await sb.from('comments').update({status}).eq('id',id);
+  allComments[idx].status=status;updateCBadge();filterComments(cmtFilter);
+}
+async function deleteComment(id,idx){
+  if(!confirm('Delete this comment?'))return;
+  if(USE_SUPABASE)await sb.from('comments').delete().eq('id',id);
+  allComments.splice(idx,1);updateCBadge();filterComments(cmtFilter);
+}
+function updateCBadge(){
+  const n=allComments.filter(c=>c.status==='pending').length;
+  const tab=document.getElementById('ctab');const ex=tab.querySelector('.badge');if(ex)ex.remove();
+  if(n>0){const b=document.createElement('span');b.className='badge';b.textContent=n;tab.appendChild(b);}
+}
+
+// ANALYTICS
+async function renderAnalytics(){
+  const ps=getP();const bs=getB();
+  // Top projects
+  const tpEl=document.getElementById('topProjects');
+  const sortedP=[...ps].sort((a,b)=>(b.views||0)-(a.views||0)).slice(0,5);
+  const maxPV=sortedP[0]?.views||1;
+  tpEl.innerHTML=sortedP.length?sortedP.map(p=>`<div class="top-item"><span class="top-name">${p.title}</span><div class="top-bar-wrap"><div class="top-bar-bg"><div class="top-bar-fill" style="width:${Math.round((p.views||0)/maxPV*100)}%"></div></div><span class="top-views">${p.views||0}</span></div></div>`).join(''):'<p style="color:var(--gray);font-size:.8rem;">No data yet.</p>';
+  // Top blogs
+  const tbEl=document.getElementById('topBlogs');
+  const sortedB=[...bs].sort((a,b)=>(b.views||0)-(a.views||0)).slice(0,5);
+  const maxBV=sortedB[0]?.views||1;
+  tbEl.innerHTML=sortedB.length?sortedB.map(b=>`<div class="top-item"><span class="top-name">${b.title}</span><div class="top-bar-wrap"><div class="top-bar-bg"><div class="top-bar-fill" style="width:${Math.round((b.views||0)/maxBV*100)}%"></div></div><span class="top-views">${b.views||0}</span></div></div>`).join(''):'<p style="color:var(--gray);font-size:.8rem;">No data yet.</p>';
+  // Category chart
+  const cats={};ps.forEach(p=>cats[p.category]=(cats[p.category]||0)+1);
+  const accent=document.documentElement.getAttribute('data-theme')==='dark'?'#00d4ff':'#0066cc';
+  if(catChartInst)catChartInst.destroy();
+  catChartInst=new Chart(document.getElementById('catChart'),{type:'doughnut',data:{labels:Object.keys(cats),datasets:[{data:Object.values(cats),backgroundColor:['#0066cc','#22c55e','#f0b429','#a855f7','#ef4444']}]},options:{plugins:{legend:{labels:{color:getComputedStyle(document.documentElement).getPropertyValue('--text')}}},responsive:true}});
+  // Overview
+  if(overviewChartInst)overviewChartInst.destroy();
+  overviewChartInst=new Chart(document.getElementById('overviewChart'),{type:'bar',data:{labels:['Projects','Blog Posts','Drafts','Comments','Total Views'],datasets:[{label:'Count',data:[ps.length,bs.filter(b=>b.status==='published').length,bs.filter(b=>b.status==='draft').length,allComments.length,ps.reduce((a,p)=>a+(p.views||0),0)+bs.reduce((a,b)=>a+(b.views||0),0)],backgroundColor:accent,borderRadius:6}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:getComputedStyle(document.documentElement).getPropertyValue('--gray')}},y:{ticks:{color:getComputedStyle(document.documentElement).getPropertyValue('--gray')}}},responsive:true}});
+}
+
+// STATS
+async function renderStats(){
+  const ps=getP();const bs=getB();
+  document.getElementById('srow').innerHTML=`
+    <div class="sbox"><div class="snum">${ps.length}</div><div class="slbl">Projects</div></div>
+    <div class="sbox"><div class="snum">${bs.filter(b=>b.status!=='draft').length}</div><div class="slbl">Published</div></div>
+    <div class="sbox"><div class="snum">${bs.filter(b=>b.status==='draft').length}</div><div class="slbl">Drafts</div></div>
+    <div class="sbox"><div class="snum">${allComments.filter(c=>c.status==='pending').length}</div><div class="slbl">Pending</div></div>
+    <div class="sbox"><div class="snum">${ps.reduce((a,p)=>a+(p.views||0),0)+bs.reduce((a,b)=>a+(b.views||0),0)}</div><div class="slbl">Total Views</div></div>`;
+}
+
+function showSuc(id){const el=document.getElementById(id);el.style.display='inline';setTimeout(()=>el.style.display='none',2500);}
+function showErr(id,msg){const el=document.getElementById(id);el.textContent=msg;el.style.display='inline';setTimeout(()=>el.style.display='none',4000);}
+
+async function renderAll(){allComments=await fetchAC();updateCBadge();await renderPList();await renderBList();renderStats();}
 </script>
 </body>
 </html>
