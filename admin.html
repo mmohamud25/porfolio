@@ -1,95 +1,121 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin Panel | mmohamud.me</title>
+  <title>Admin | mmohamud.me</title>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    :root{--navy:#080e1c;--navy2:#0f172a;--cyan:#00d4ff;--white:#eef2ff;--gray:#7a8599;--card:#0f1a2e;--border:rgba(0,212,255,0.12);--danger:#ff4d6a;--success:#00d97e;}
+    :root{--transition:0.3s ease;}
+    [data-theme="light"]{--bg:#f8fafc;--bg2:#ffffff;--bg3:#eef2ff;--card:#ffffff;--border:rgba(26,37,64,0.1);--text:#1a2540;--text2:#3d4f6e;--gray:#64748b;--accent:#0066cc;--shadow:rgba(0,0,0,0.06);--nav-bg:rgba(248,250,252,0.95);--danger:#dc2626;--success:#16a34a;--skeleton:#e2e8f0;}
+    [data-theme="dark"]{--bg:#080e1c;--bg2:#0f172a;--bg3:#1a2540;--card:#0f1a2e;--border:rgba(0,212,255,0.1);--text:#eef2ff;--text2:#a0aec0;--gray:#7a8599;--accent:#00d4ff;--shadow:rgba(0,212,255,0.06);--nav-bg:rgba(8,14,28,0.95);--danger:#f87171;--success:#4ade80;--skeleton:#1a2540;}
     *{margin:0;padding:0;box-sizing:border-box;}
-    body{background:var(--navy);color:var(--white);font-family:'DM Sans',sans-serif;min-height:100vh;}
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;transition:background var(--transition),color var(--transition);}
 
     /* LOGIN */
     #loginScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;}
-    .login-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:48px;max-width:400px;width:100%;text-align:center;}
-    .login-logo{font-family:'IBM Plex Mono',monospace;font-size:1.2rem;color:var(--cyan);margin-bottom:8px;letter-spacing:3px;}
+    .login-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:48px;max-width:400px;width:100%;text-align:center;box-shadow:0 4px 24px var(--shadow);}
+    .login-logo{font-family:'IBM Plex Mono',monospace;font-size:1.1rem;color:var(--accent);margin-bottom:6px;letter-spacing:3px;}
     .login-sub{font-size:0.82rem;color:var(--gray);margin-bottom:32px;}
-    .login-box input{width:100%;background:var(--navy);border:1px solid var(--border);border-radius:8px;padding:13px 16px;color:var(--white);font-family:'DM Sans',sans-serif;font-size:0.9rem;outline:none;margin-bottom:14px;transition:border-color 0.3s;}
-    .login-box input:focus{border-color:var(--cyan);}
-    .login-btn{width:100%;background:var(--cyan);color:var(--navy);border:none;padding:13px;border-radius:8px;font-weight:700;font-size:0.9rem;cursor:pointer;letter-spacing:1px;transition:all 0.3s;}
-    .login-btn:hover{background:var(--white);}
+    .login-box input{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:13px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.9rem;outline:none;margin-bottom:12px;transition:border-color 0.3s;}
+    .login-box input:focus{border-color:var(--accent);}
+    .login-box input::placeholder{color:var(--gray);}
+    .login-btn{width:100%;background:var(--accent);color:var(--bg);border:none;padding:13px;border-radius:8px;font-weight:700;font-size:0.9rem;cursor:pointer;letter-spacing:1px;transition:all 0.3s;}
+    .login-btn:hover{opacity:0.85;}
     .login-err{color:var(--danger);font-size:0.8rem;margin-top:10px;display:none;}
+    .login-theme{margin-top:20px;}
+    .login-theme button{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:6px 16px;cursor:pointer;font-size:0.78rem;color:var(--gray);transition:all 0.3s;}
+    .login-theme button:hover{border-color:var(--accent);color:var(--accent);}
 
     /* DASHBOARD */
     #dashboard{display:none;min-height:100vh;}
-    .dash-header{background:var(--card);border-bottom:1px solid var(--border);padding:16px 30px;display:flex;justify-content:space-between;align-items:center;}
-    .dash-logo{font-family:'IBM Plex Mono',monospace;font-size:0.9rem;color:var(--cyan);letter-spacing:2px;}
-    .dash-nav{display:flex;gap:8px;}
-    .dash-tab{font-family:'IBM Plex Mono',monospace;font-size:0.72rem;padding:7px 18px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--gray);cursor:pointer;transition:all 0.3s;letter-spacing:1px;}
-    .dash-tab.active,.dash-tab:hover{border-color:var(--cyan);color:var(--cyan);background:rgba(0,212,255,0.06);}
-    .dash-actions{display:flex;gap:10px;align-items:center;}
+    .dash-header{background:var(--card);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10;transition:background var(--transition);}
+    .dash-logo{font-family:'IBM Plex Mono',monospace;font-size:0.9rem;color:var(--accent);letter-spacing:2px;}
+    .dash-nav{display:flex;gap:6px;}
+    .dash-tab{font-family:'IBM Plex Mono',monospace;font-size:0.7rem;padding:7px 16px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--gray);cursor:pointer;transition:all 0.3s;letter-spacing:1px;}
+    .dash-tab.active,.dash-tab:hover{border-color:var(--accent);color:var(--accent);background:var(--bg3);}
+    .dash-actions{display:flex;gap:8px;align-items:center;}
+    .theme-btn{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:6px 14px;cursor:pointer;font-size:0.76rem;color:var(--gray);display:flex;align-items:center;gap:5px;transition:all 0.3s;}
+    .theme-btn:hover{border-color:var(--accent);color:var(--accent);}
     .view-site{font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--gray);text-decoration:none;border:1px solid var(--border);padding:6px 14px;border-radius:6px;transition:all 0.3s;}
-    .view-site:hover{color:var(--cyan);border-color:var(--cyan);}
-    .logout-btn{font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--danger);border:1px solid rgba(255,77,106,0.3);padding:6px 14px;border-radius:6px;cursor:pointer;background:transparent;transition:all 0.3s;}
-    .logout-btn:hover{background:rgba(255,77,106,0.1);}
-    .dash-body{padding:30px;max-width:1100px;margin:0 auto;}
+    .view-site:hover{color:var(--accent);border-color:var(--accent);}
+    .logout-btn{font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--danger);border:1px solid rgba(220,38,38,0.3);padding:6px 14px;border-radius:6px;cursor:pointer;background:transparent;transition:all 0.3s;}
+    .logout-btn:hover{background:rgba(220,38,38,0.1);}
 
-    /* PANELS */
+    .dash-body{padding:28px;max-width:1100px;margin:0 auto;}
     .panel{display:none;}.panel.active{display:block;}
 
+    /* STATS */
+    .stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;margin-bottom:28px;}
+    .stat-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px;box-shadow:0 2px 8px var(--shadow);}
+    .stat-box-num{font-family:'IBM Plex Mono',monospace;font-size:1.8rem;color:var(--accent);font-weight:700;margin-bottom:3px;}
+    .stat-box-label{font-size:0.75rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px;}
+
+    /* SUPABASE STATUS */
+    .sb-status{display:flex;align-items:center;gap:8px;font-family:'IBM Plex Mono',monospace;font-size:0.72rem;padding:8px 14px;border-radius:6px;border:1px solid var(--border);margin-bottom:24px;background:var(--card);}
+    .sb-dot{width:8px;height:8px;border-radius:50%;}
+    .sb-dot.connected{background:#22c55e;}
+    .sb-dot.local{background:#f0b429;}
+
     /* FORMS */
-    .form-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:28px;margin-bottom:24px;}
-    .form-title{font-family:'IBM Plex Mono',monospace;font-size:0.8rem;color:var(--cyan);letter-spacing:2px;margin-bottom:20px;text-transform:uppercase;}
+    .form-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:28px;margin-bottom:24px;box-shadow:0 2px 8px var(--shadow);}
+    .form-title{font-family:'IBM Plex Mono',monospace;font-size:0.78rem;color:var(--accent);letter-spacing:2px;margin-bottom:20px;text-transform:uppercase;}
     .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
     .form-grid.full{grid-template-columns:1fr;}
-    .form-group{display:flex;flex-direction:column;gap:6px;}
+    .form-group{display:flex;flex-direction:column;gap:5px;}
     .form-group label{font-size:0.78rem;color:var(--gray);letter-spacing:0.5px;}
-    .form-group input,.form-group select,.form-group textarea{background:var(--navy);border:1px solid var(--border);border-radius:8px;padding:11px 14px;color:var(--white);font-family:'DM Sans',sans-serif;font-size:0.88rem;outline:none;transition:border-color 0.3s;width:100%;}
-    .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--cyan);}
-    .form-group select option{background:var(--navy);}
-    .form-group textarea{resize:vertical;min-height:100px;line-height:1.6;}
-    .form-group textarea.tall{min-height:180px;}
-    .form-hint{font-size:0.72rem;color:rgba(122,133,153,0.6);margin-top:2px;}
-    .form-actions{display:flex;gap:10px;margin-top:18px;align-items:center;}
-    .save-btn{background:var(--cyan);color:var(--navy);border:none;padding:11px 28px;border-radius:8px;font-weight:700;font-size:0.86rem;cursor:pointer;letter-spacing:1px;transition:all 0.3s;}
-    .save-btn:hover{background:var(--white);}
-    .cancel-btn{background:transparent;border:1px solid var(--border);color:var(--gray);padding:11px 20px;border-radius:8px;font-size:0.86rem;cursor:pointer;transition:all 0.3s;}
+    .form-group input,.form-group select,.form-group textarea{background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.88rem;outline:none;transition:border-color 0.3s;width:100%;}
+    .form-group input::placeholder,.form-group textarea::placeholder{color:var(--gray);}
+    .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--accent);}
+    .form-group select option{background:var(--bg);}
+    .form-group textarea{resize:vertical;min-height:90px;line-height:1.6;}
+    .form-group textarea.tall{min-height:160px;}
+    .form-hint{font-size:0.7rem;color:rgba(100,116,139,0.7);margin-top:2px;}
+    .form-actions{display:flex;gap:10px;margin-top:18px;align-items:center;flex-wrap:wrap;}
+    .save-btn{background:var(--accent);color:var(--bg);border:none;padding:10px 26px;border-radius:8px;font-weight:700;font-size:0.85rem;cursor:pointer;letter-spacing:1px;transition:all 0.3s;}
+    .save-btn:hover{opacity:0.85;}
+    .cancel-btn{background:transparent;border:1px solid var(--border);color:var(--gray);padding:10px 18px;border-radius:8px;font-size:0.85rem;cursor:pointer;transition:all 0.3s;}
     .cancel-btn:hover{border-color:var(--gray);}
-    .success-msg{color:var(--success);font-size:0.8rem;font-family:'IBM Plex Mono',monospace;display:none;}
+    .success-msg{color:var(--success);font-size:0.78rem;font-family:'IBM Plex Mono',monospace;display:none;}
+    .error-msg{color:var(--danger);font-size:0.78rem;display:none;}
 
     /* IMAGE UPLOAD */
-    .img-upload{border:2px dashed var(--border);border-radius:8px;padding:20px;text-align:center;cursor:pointer;transition:all 0.3s;position:relative;}
-    .img-upload:hover{border-color:var(--cyan);}
-    .img-upload input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;}
-    .img-upload p{font-size:0.8rem;color:var(--gray);}
-    .img-preview{margin-top:10px;max-width:100%;max-height:160px;border-radius:6px;display:none;}
+    .img-upload{border:2px dashed var(--border);border-radius:8px;padding:18px;text-align:center;cursor:pointer;transition:all 0.3s;position:relative;}
+    .img-upload:hover{border-color:var(--accent);}
+    .img-upload input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;}
+    .img-upload p{font-size:0.8rem;color:var(--gray);margin-top:4px;}
+    .img-preview{margin-top:10px;width:100%;max-height:150px;object-fit:cover;border-radius:6px;display:none;}
+
+    /* TOGGLE */
+    .toggle-wrap{display:flex;align-items:center;gap:10px;}
+    .toggle{position:relative;display:inline-block;width:44px;height:24px;}
+    .toggle input{opacity:0;width:0;height:0;}
+    .toggle-slider{position:absolute;cursor:pointer;inset:0;background:var(--border);border-radius:24px;transition:0.3s;}
+    .toggle-slider:before{content:'';position:absolute;height:18px;width:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:0.3s;}
+    .toggle input:checked+.toggle-slider{background:var(--accent);}
+    .toggle input:checked+.toggle-slider:before{transform:translateX(20px);}
+    .toggle-label{font-size:0.84rem;color:var(--text2);}
 
     /* LIST */
-    .list-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
-    .list-title{font-family:'IBM Plex Mono',monospace;font-size:0.78rem;color:var(--white);letter-spacing:2px;}
-    .add-btn{background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.3);color:var(--cyan);padding:8px 18px;border-radius:6px;font-size:0.78rem;cursor:pointer;font-family:'IBM Plex Mono',monospace;letter-spacing:1px;transition:all 0.3s;}
-    .add-btn:hover{background:rgba(0,212,255,0.2);}
+    .list-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+    .list-title{font-family:'IBM Plex Mono',monospace;font-size:0.76rem;color:var(--text);letter-spacing:2px;}
+    .add-btn{background:var(--bg3);border:1.5px solid var(--border);color:var(--accent);padding:7px 16px;border-radius:6px;font-size:0.76rem;cursor:pointer;font-family:'IBM Plex Mono',monospace;letter-spacing:1px;transition:all 0.3s;}
+    .add-btn:hover{background:var(--accent);color:var(--bg);border-color:var(--accent);}
     .item-list{display:flex;flex-direction:column;gap:10px;}
-    .item-row{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;transition:border-color 0.3s;}
-    .item-row:hover{border-color:rgba(0,212,255,0.25);}
-    .item-info{}
+    .item-row{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;transition:border-color 0.3s;box-shadow:0 1px 4px var(--shadow);}
+    .item-row:hover{border-color:rgba(0,102,204,0.3);}
     .item-name{font-size:0.9rem;font-weight:600;margin-bottom:2px;}
-    .item-meta{font-size:0.75rem;color:var(--gray);}
-    .item-actions{display:flex;gap:8px;}
-    .edit-btn{background:transparent;border:1px solid var(--border);color:var(--gray);padding:5px 13px;border-radius:5px;font-size:0.75rem;cursor:pointer;transition:all 0.3s;}
-    .edit-btn:hover{border-color:var(--cyan);color:var(--cyan);}
-    .del-btn{background:transparent;border:1px solid rgba(255,77,106,0.3);color:var(--danger);padding:5px 13px;border-radius:5px;font-size:0.75rem;cursor:pointer;transition:all 0.3s;}
-    .del-btn:hover{background:rgba(255,77,106,0.1);}
-    .empty-list{text-align:center;padding:40px;color:var(--gray);font-family:'IBM Plex Mono',monospace;font-size:0.76rem;border:1px dashed var(--border);border-radius:8px;}
+    .item-meta{font-size:0.74rem;color:var(--gray);display:flex;gap:10px;align-items:center;}
+    .item-badge{font-family:'IBM Plex Mono',monospace;font-size:0.62rem;padding:2px 8px;border-radius:10px;background:var(--bg3);color:var(--accent);border:1px solid var(--border);}
+    .item-actions{display:flex;gap:7px;}
+    .edit-btn{background:transparent;border:1px solid var(--border);color:var(--gray);padding:5px 12px;border-radius:5px;font-size:0.74rem;cursor:pointer;transition:all 0.3s;}
+    .edit-btn:hover{border-color:var(--accent);color:var(--accent);}
+    .del-btn{background:transparent;border:1px solid rgba(220,38,38,0.3);color:var(--danger);padding:5px 12px;border-radius:5px;font-size:0.74rem;cursor:pointer;transition:all 0.3s;}
+    .del-btn:hover{background:rgba(220,38,38,0.1);}
+    .empty-list{text-align:center;padding:40px;color:var(--gray);font-family:'IBM Plex Mono',monospace;font-size:0.74rem;border:1.5px dashed var(--border);border-radius:8px;}
 
-    /* STATS */
-    .stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-bottom:28px;}
-    .stat-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px;}
-    .stat-box-num{font-family:'IBM Plex Mono',monospace;font-size:1.8rem;color:var(--cyan);font-weight:700;margin-bottom:3px;}
-    .stat-box-label{font-size:0.76rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px;}
-
-    @media(max-width:640px){.form-grid{grid-template-columns:1fr;}.dash-header{flex-direction:column;gap:12px;}}
+    @media(max-width:640px){.form-grid{grid-template-columns:1fr;}.dash-header{flex-wrap:wrap;gap:10px;}}
   </style>
 </head>
 <body>
@@ -101,7 +127,8 @@
     <div class="login-sub">mmohamud.me control panel</div>
     <input type="password" id="pwInput" placeholder="Enter password" onkeydown="if(event.key==='Enter')login()"/>
     <button class="login-btn" onclick="login()">Access Dashboard</button>
-    <div class="login-err" id="loginErr">Incorrect password. Try again.</div>
+    <div class="login-err" id="loginErr">Incorrect password.</div>
+    <div class="login-theme"><button onclick="toggleTheme()"><span id="loginThemeIcon">🌙</span> Switch theme</button></div>
   </div>
 </div>
 
@@ -110,291 +137,296 @@
   <div class="dash-header">
     <div class="dash-logo">MM // ADMIN</div>
     <div class="dash-nav">
-      <button class="dash-tab active" onclick="switchPanel('projects')">Projects</button>
-      <button class="dash-tab" onclick="switchPanel('blogs')">Blog Posts</button>
+      <button class="dash-tab active" onclick="switchPanel('projects',this)">Projects</button>
+      <button class="dash-tab" onclick="switchPanel('blogs',this)">Blog Posts</button>
     </div>
     <div class="dash-actions">
+      <button class="theme-btn" onclick="toggleTheme()"><span id="themeIcon">🌙</span><span id="themeLabel">Dark</span></button>
       <a href="index.html" target="_blank" class="view-site">View Site</a>
       <button class="logout-btn" onclick="logout()">Logout</button>
     </div>
   </div>
 
   <div class="dash-body">
+    <div class="sb-status" id="sbStatus">
+      <div class="sb-dot local" id="sbDot"></div>
+      <span id="sbText">Using localStorage (local only)</span>
+      <span style="margin-left:auto;font-size:0.66rem;color:var(--gray)">Add Supabase credentials in index.html to enable cloud storage</span>
+    </div>
 
-    <!-- STATS -->
     <div class="stats-row" id="statsRow"></div>
 
     <!-- PROJECTS PANEL -->
     <div class="panel active" id="projectsPanel">
-      <!-- Form -->
       <div class="form-card" id="projectForm" style="display:none">
         <div class="form-title" id="projectFormTitle">// Add New Project</div>
         <div class="form-grid">
-          <div class="form-group">
-            <label>Project Title *</label>
-            <input type="text" id="ptitle" placeholder="e.g. Security+ Exam Prep App"/>
-          </div>
-          <div class="form-group">
-            <label>Category *</label>
-            <select id="pcat">
-              <option value="cybersecurity">Cybersecurity</option>
-              <option value="data">Data Analytics</option>
-              <option value="web">Web Dev</option>
-              <option value="education">Education</option>
-            </select>
-          </div>
+          <div class="form-group"><label>Project Title *</label><input type="text" id="ptitle" placeholder="e.g. Security+ Exam Prep App"/></div>
+          <div class="form-group"><label>Category *</label><select id="pcat"><option value="cybersecurity">Cybersecurity</option><option value="data">Data Analytics</option><option value="web">Web Dev</option><option value="education">Education</option></select></div>
         </div>
         <div class="form-grid full" style="margin-top:14px">
-          <div class="form-group">
-            <label>Short Description *</label>
-            <textarea id="pdesc" placeholder="Clear concise summary of what this project is..."></textarea>
-          </div>
-          <div class="form-group">
-            <label>Your Role and Skills Used</label>
-            <textarea id="prole" placeholder="What specifically did you do? e.g. Sole developer, built with Python and React..."></textarea>
-          </div>
-          <div class="form-group">
-            <label>The Problem or Goal</label>
-            <textarea id="pproblem" placeholder="What issue were you trying to solve?"></textarea>
-          </div>
-          <div class="form-group">
-            <label>The Process and Solution</label>
-            <textarea id="pprocess" placeholder="Explain your problem-solving process, decisions, and challenges faced..."></textarea>
-          </div>
-          <div class="form-group">
-            <label>Impact and Results</label>
-            <textarea id="pimpact" placeholder="Use metrics if possible e.g. reduced load time by 20%, trained 100+ users..."></textarea>
-          </div>
+          <div class="form-group"><label>Short Description *</label><textarea id="pdesc" placeholder="Clear concise summary..."></textarea></div>
+          <div class="form-group"><label>Your Role and Skills Used</label><textarea id="prole" placeholder="What you specifically did and tools used..."></textarea></div>
+          <div class="form-group"><label>The Problem or Goal</label><textarea id="pproblem" placeholder="What issue were you trying to solve?"></textarea></div>
+          <div class="form-group"><label>The Process and Solution</label><textarea id="pprocess" placeholder="Your problem-solving process, decisions, challenges..."></textarea></div>
+          <div class="form-group"><label>Impact and Results</label><textarea id="pimpact" placeholder="Use metrics if possible e.g. reduced load time by 20%..."></textarea></div>
         </div>
         <div class="form-grid" style="margin-top:14px">
-          <div class="form-group">
-            <label>Skills Used (comma separated)</label>
-            <input type="text" id="pskills" placeholder="Python, React, SQL, Tableau"/>
-          </div>
-          <div class="form-group">
-            <label>Live Demo URL</label>
-            <input type="url" id="plive" placeholder="https://"/>
-          </div>
-          <div class="form-group">
-            <label>GitHub URL</label>
-            <input type="url" id="pgithub" placeholder="https://github.com/"/>
-          </div>
-          <div class="form-group">
-            <label>YouTube Video ID</label>
-            <input type="text" id="pyt" placeholder="e.g. dQw4w9WgXcQ (just the ID)"/>
-            <span class="form-hint">The part after youtube.com/watch?v=</span>
-          </div>
+          <div class="form-group"><label>Skills (comma separated)</label><input type="text" id="pskills" placeholder="Python, React, SQL"/></div>
+          <div class="form-group"><label>Live Demo URL</label><input type="url" id="plive" placeholder="https://"/></div>
+          <div class="form-group"><label>GitHub URL</label><input type="url" id="pgithub" placeholder="https://github.com/"/></div>
+          <div class="form-group"><label>YouTube Video ID</label><input type="text" id="pyt" placeholder="e.g. dQw4w9WgXcQ"/><span class="form-hint">The part after youtube.com/watch?v=</span></div>
+          <div class="form-group"><label>Image URL</label><input type="url" id="pimgurl" placeholder="https://... or upload below"/></div>
         </div>
         <div class="form-group" style="margin-top:14px">
-          <label>Project Image</label>
-          <div class="img-upload" id="imgUploadArea">
-            <input type="file" accept="image/*" id="pimgFile" onchange="handleImg(this)"/>
+          <label>Or Upload Image</label>
+          <div class="img-upload">
+            <input type="file" accept="image/*" onchange="handleImg(this,'pimgData','pimgPreview','pimgurl')"/>
+            <div>📁</div>
             <p>Click to upload screenshot or mockup</p>
           </div>
           <img id="pimgPreview" class="img-preview"/>
           <input type="hidden" id="pimgData"/>
         </div>
+        <div class="form-group" style="margin-top:14px">
+          <div class="toggle-wrap">
+            <label class="toggle"><input type="checkbox" id="pfeatured"/><span class="toggle-slider"></span></label>
+            <span class="toggle-label">Mark as Featured (shows gold badge and sorts to top)</span>
+          </div>
+        </div>
         <div class="form-actions">
           <button class="save-btn" onclick="saveProject()">Save Project</button>
-          <button class="cancel-btn" onclick="cancelProjectForm()">Cancel</button>
-          <span class="success-msg" id="pSuccess">Saved successfully!</span>
+          <button class="cancel-btn" onclick="cancelForm('projectForm')">Cancel</button>
+          <span class="success-msg" id="pSuccess">Saved!</span>
+          <span class="error-msg" id="pError"></span>
         </div>
       </div>
-
-      <!-- List -->
-      <div class="list-header">
-        <div class="list-title">// Projects</div>
-        <button class="add-btn" onclick="showProjectForm()">+ Add Project</button>
-      </div>
+      <div class="list-header"><div class="list-title">// Projects</div><button class="add-btn" onclick="showProjectForm()">+ Add Project</button></div>
       <div class="item-list" id="projectList"></div>
     </div>
 
     <!-- BLOGS PANEL -->
     <div class="panel" id="blogsPanel">
-      <!-- Form -->
       <div class="form-card" id="blogForm" style="display:none">
         <div class="form-title" id="blogFormTitle">// Write New Post</div>
         <div class="form-grid">
-          <div class="form-group">
-            <label>Post Title *</label>
-            <input type="text" id="btitle" placeholder="e.g. Why IT Support is the Best Entry into Cybersecurity"/>
-          </div>
-          <div class="form-group">
-            <label>Category *</label>
-            <select id="bcat">
-              <option value="Cybersecurity">Cybersecurity</option>
-              <option value="Career">Career</option>
-              <option value="Education">Education</option>
-              <option value="Technology">Technology</option>
-              <option value="Community">Community</option>
-            </select>
-          </div>
+          <div class="form-group"><label>Post Title *</label><input type="text" id="btitle" placeholder="e.g. Why IT Support is the Best Entry into Cybersecurity"/></div>
+          <div class="form-group"><label>Category *</label><select id="bcat"><option>Cybersecurity</option><option>Career</option><option>Education</option><option>Technology</option><option>Community</option></select></div>
         </div>
         <div class="form-grid full" style="margin-top:14px">
-          <div class="form-group">
-            <label>Short Excerpt (shown on card) *</label>
-            <textarea id="bexc" placeholder="2-3 sentence summary shown on the blog card..."></textarea>
+          <div class="form-group"><label>Short Excerpt (shown on card) *</label><textarea id="bexc" placeholder="2-3 sentence summary shown on the blog card..."></textarea></div>
+          <div class="form-group"><label>Full Post Content *</label><textarea id="bcontent" class="tall" placeholder="Write your full blog post here..."></textarea></div>
+          <div class="form-group"><label>Publish Date</label><input type="text" id="bdate" placeholder="e.g. April 2026"/></div>
+          <div class="form-group"><label>Cover Image URL</label><input type="url" id="bimgurl" placeholder="https://... or upload below"/></div>
+        </div>
+        <div class="form-group" style="margin-top:14px">
+          <label>Or Upload Cover Image</label>
+          <div class="img-upload">
+            <input type="file" accept="image/*" onchange="handleImg(this,'bimgData','bimgPreview','bimgurl')"/>
+            <div>📁</div>
+            <p>Click to upload a cover image for this post</p>
           </div>
-          <div class="form-group">
-            <label>Full Post Content *</label>
-            <textarea id="bcontent" class="tall" placeholder="Write your full blog post here..."></textarea>
-          </div>
-          <div class="form-group">
-            <label>Publish Date</label>
-            <input type="text" id="bdate" placeholder="e.g. April 2026"/>
-          </div>
+          <img id="bimgPreview" class="img-preview"/>
+          <input type="hidden" id="bimgData"/>
         </div>
         <div class="form-actions">
           <button class="save-btn" onclick="saveBlog()">Publish Post</button>
-          <button class="cancel-btn" onclick="cancelBlogForm()">Cancel</button>
-          <span class="success-msg" id="bSuccess">Published successfully!</span>
+          <button class="cancel-btn" onclick="cancelForm('blogForm')">Cancel</button>
+          <span class="success-msg" id="bSuccess">Published!</span>
+          <span class="error-msg" id="bError"></span>
         </div>
       </div>
-
-      <!-- List -->
-      <div class="list-header">
-        <div class="list-title">// Blog Posts</div>
-        <button class="add-btn" onclick="showBlogForm()">+ Write Post</button>
-      </div>
+      <div class="list-header"><div class="list-title">// Blog Posts</div><button class="add-btn" onclick="showBlogForm()">+ Write Post</button></div>
       <div class="item-list" id="blogList"></div>
     </div>
-
   </div>
 </div>
 
 <script>
-const PASS = 'kulan2026';
-let editingProjectIdx = -1;
-let editingBlogIdx = -1;
+// ===========================
+// SUPABASE (paste same creds)
+// ===========================
+const SUPABASE_URL = '';
+const SUPABASE_KEY = '';
+const USE_SUPABASE = SUPABASE_URL && SUPABASE_KEY;
+let sb = null;
+if(USE_SUPABASE){sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);}
 
+// ===========================
+// THEME
+// ===========================
+const PASS = 'kulan2026';
+function getAutoTheme(){const h=new Date().getHours();return(h>=18||h<6)?'dark':'light';}
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme',t);
+  const icon=t==='dark'?'☀️':'🌙';
+  const label=t==='dark'?'Light':'Dark';
+  ['themeIcon','loginThemeIcon'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=icon;});
+  const tl=document.getElementById('themeLabel');if(tl)tl.textContent=label;
+  localStorage.setItem('mm_admin_theme',t);
+}
+function toggleTheme(){applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');}
+function initTheme(){const s=localStorage.getItem('mm_admin_theme');applyTheme(s||getAutoTheme());}
+initTheme();
+
+// ===========================
 // AUTH
+// ===========================
 function login(){
-  const pw = document.getElementById('pwInput').value;
-  if(pw === PASS){
+  const pw=document.getElementById('pwInput').value;
+  if(pw===PASS){
     document.getElementById('loginScreen').style.display='none';
     document.getElementById('dashboard').style.display='block';
+    checkSupabase();
     renderAll();
   } else {
     document.getElementById('loginErr').style.display='block';
   }
 }
-function logout(){
-  document.getElementById('dashboard').style.display='none';
-  document.getElementById('loginScreen').style.display='flex';
-  document.getElementById('pwInput').value='';
+function logout(){document.getElementById('dashboard').style.display='none';document.getElementById('loginScreen').style.display='flex';document.getElementById('pwInput').value='';}
+
+// ===========================
+// SUPABASE STATUS
+// ===========================
+async function checkSupabase(){
+  const dot=document.getElementById('sbDot');
+  const text=document.getElementById('sbText');
+  if(USE_SUPABASE){
+    try{await sb.from('projects').select('count',{count:'exact',head:true});dot.className='sb-dot connected';text.textContent='Connected to Supabase (cloud storage active)';}
+    catch{dot.className='sb-dot local';text.textContent='Supabase connection failed — using localStorage';}
+  }
 }
 
+// ===========================
 // DATA
+// ===========================
 function getP(){try{return JSON.parse(localStorage.getItem('mm_projects')||'[]');}catch{return[];}}
 function getB(){try{return JSON.parse(localStorage.getItem('mm_blogs')||'[]');}catch{return[];}}
-function saveP(data){localStorage.setItem('mm_projects',JSON.stringify(data));}
-function saveB(data){localStorage.setItem('mm_blogs',JSON.stringify(data));}
+function saveP(d){localStorage.setItem('mm_projects',JSON.stringify(d));}
+function saveB(d){localStorage.setItem('mm_blogs',JSON.stringify(d));}
 
-// PANELS
-function switchPanel(panel){
-  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.dash-tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById(panel+'Panel').classList.add('active');
-  event.target.classList.add('active');
+async function fetchProjects(){
+  if(USE_SUPABASE){const{data}=await sb.from('projects').select('*').order('featured',{ascending:false}).order('created_at',{ascending:false});return data||[];}
+  return getP();
+}
+async function fetchBlogs(){
+  if(USE_SUPABASE){const{data}=await sb.from('blogs').select('*').order('created_at',{ascending:false});return data||[];}
+  return getB();
 }
 
-// STATS
-function renderStats(){
-  document.getElementById('statsRow').innerHTML=`
-    <div class="stat-box"><div class="stat-box-num">${getP().length}</div><div class="stat-box-label">Projects</div></div>
-    <div class="stat-box"><div class="stat-box-num">${getB().length}</div><div class="stat-box-label">Blog Posts</div></div>
-    <div class="stat-box"><div class="stat-box-num">${[...new Set(getP().map(p=>p.category))].length}</div><div class="stat-box-label">Categories</div></div>
-  `;
-}
-
+// ===========================
 // IMAGE
-function handleImg(input){
-  const file = input.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    document.getElementById('pimgData').value = e.target.result;
-    const prev = document.getElementById('pimgPreview');
-    prev.src = e.target.result;
-    prev.style.display = 'block';
+// ===========================
+function handleImg(input,dataId,previewId,urlId){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    document.getElementById(dataId).value=e.target.result;
+    const prev=document.getElementById(previewId);
+    prev.src=e.target.result;prev.style.display='block';
+    document.getElementById(urlId).value='';
   };
   reader.readAsDataURL(file);
 }
 
+// ===========================
+// PANELS
+// ===========================
+let editPIdx=-1,editBIdx=-1;
+
+function switchPanel(panel,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.dash-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(panel+'Panel').classList.add('active');
+  btn.classList.add('active');
+}
+
+function cancelForm(id){document.getElementById(id).style.display='none';editPIdx=-1;editBIdx=-1;}
+
+function clearProjectForm(){['ptitle','pdesc','prole','pproblem','pprocess','pimpact','pskills','plive','pgithub','pyt','pimgurl','pimgData'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});document.getElementById('pfeatured').checked=false;document.getElementById('pimgPreview').style.display='none';}
+function clearBlogForm(){['btitle','bexc','bcontent','bimgurl','bimgData'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});document.getElementById('bimgPreview').style.display='none';document.getElementById('bdate').value=new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'});}
+
+// ===========================
 // PROJECTS
+// ===========================
 function showProjectForm(idx=-1){
-  editingProjectIdx = idx;
-  const form = document.getElementById('projectForm');
-  form.style.display = 'block';
-  document.getElementById('projectFormTitle').textContent = idx === -1 ? '// Add New Project' : '// Edit Project';
-  if(idx >= 0){
-    const p = getP()[idx];
-    document.getElementById('ptitle').value = p.title||'';
-    document.getElementById('pcat').value = p.category||'cybersecurity';
-    document.getElementById('pdesc').value = p.description||'';
-    document.getElementById('prole').value = p.role||'';
-    document.getElementById('pproblem').value = p.problem||'';
-    document.getElementById('pprocess').value = p.process||'';
-    document.getElementById('pimpact').value = p.impact||'';
-    document.getElementById('pskills').value = p.skills||'';
-    document.getElementById('plive').value = p.liveLink||'';
-    document.getElementById('pgithub').value = p.githubLink||'';
-    document.getElementById('pyt').value = p.youtubeId||'';
-    document.getElementById('pimgData').value = p.image||'';
-    if(p.image){const prev=document.getElementById('pimgPreview');prev.src=p.image;prev.style.display='block';}
-  } else {
-    ['ptitle','pdesc','prole','pproblem','pprocess','pimpact','pskills','plive','pgithub','pyt','pimgData'].forEach(id=>document.getElementById(id).value='');
-    document.getElementById('pimgPreview').style.display='none';
+  editPIdx=idx;
+  const form=document.getElementById('projectForm');
+  form.style.display='block';
+  document.getElementById('projectFormTitle').textContent=idx===-1?'// Add New Project':'// Edit Project';
+  clearProjectForm();
+  if(idx>=0){
+    const p=getP()[idx];
+    document.getElementById('ptitle').value=p.title||'';
+    document.getElementById('pcat').value=p.category||'cybersecurity';
+    document.getElementById('pdesc').value=p.description||'';
+    document.getElementById('prole').value=p.role||'';
+    document.getElementById('pproblem').value=p.problem||'';
+    document.getElementById('pprocess').value=p.process||'';
+    document.getElementById('pimpact').value=p.impact||'';
+    document.getElementById('pskills').value=p.skills||'';
+    document.getElementById('plive').value=p.live_link||p.liveLink||'';
+    document.getElementById('pgithub').value=p.github_link||p.githubLink||'';
+    document.getElementById('pyt').value=p.youtube_id||p.youtubeId||'';
+    document.getElementById('pimgurl').value=p.image_url||'';
+    document.getElementById('pfeatured').checked=p.featured||false;
+    if(p.image_url||p.image){const prev=document.getElementById('pimgPreview');prev.src=p.image_url||p.image;prev.style.display='block';}
   }
   form.scrollIntoView({behavior:'smooth'});
 }
 
-function cancelProjectForm(){
-  document.getElementById('projectForm').style.display='none';
-  editingProjectIdx=-1;
-}
-
-function saveProject(){
-  const title = document.getElementById('ptitle').value.trim();
-  const desc = document.getElementById('pdesc').value.trim();
-  if(!title||!desc){alert('Title and description are required.');return;}
-  const proj = {
-    title, description:desc,
+async function saveProject(){
+  const title=document.getElementById('ptitle').value.trim();
+  const desc=document.getElementById('pdesc').value.trim();
+  if(!title||!desc){showError('pError','Title and description are required.');return;}
+  const imgUrl=document.getElementById('pimgurl').value.trim()||document.getElementById('pimgData').value||'';
+  const proj={
+    title,description:desc,
     category:document.getElementById('pcat').value,
     role:document.getElementById('prole').value.trim(),
     problem:document.getElementById('pproblem').value.trim(),
     process:document.getElementById('pprocess').value.trim(),
     impact:document.getElementById('pimpact').value.trim(),
     skills:document.getElementById('pskills').value.trim(),
-    liveLink:document.getElementById('plive').value.trim(),
-    githubLink:document.getElementById('pgithub').value.trim(),
-    youtubeId:document.getElementById('pyt').value.trim(),
-    image:document.getElementById('pimgData').value,
+    live_link:document.getElementById('plive').value.trim(),
+    github_link:document.getElementById('pgithub').value.trim(),
+    youtube_id:document.getElementById('pyt').value.trim(),
+    image_url:imgUrl,
+    featured:document.getElementById('pfeatured').checked,
+    views:0,
     date:new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'})
   };
-  const ps = getP();
-  if(editingProjectIdx >= 0) ps[editingProjectIdx]=proj;
-  else ps.unshift(proj);
-  saveP(ps);
-  const msg=document.getElementById('pSuccess');msg.style.display='inline';setTimeout(()=>msg.style.display='none',2500);
-  cancelProjectForm();
+  if(USE_SUPABASE){
+    try{
+      if(editPIdx>=0){const id=getP()[editPIdx].id;await sb.from('projects').update(proj).eq('id',id);}
+      else{await sb.from('projects').insert([proj]);}
+    }catch(e){showError('pError','Supabase error: '+e.message);return;}
+  } else {
+    const ps=getP();
+    if(editPIdx>=0)ps[editPIdx]={...ps[editPIdx],...proj};
+    else ps.unshift({...proj,id:Date.now().toString()});
+    saveP(ps);
+  }
+  showSuccess('pSuccess');cancelForm('projectForm');renderAll();
+}
+
+async function deleteProject(idx){
+  if(!confirm('Delete this project?'))return;
+  if(USE_SUPABASE){const p=getP()[idx];await sb.from('projects').delete().eq('id',p.id);}
+  else{const ps=getP();ps.splice(idx,1);saveP(ps);}
   renderAll();
 }
 
-function deleteProject(idx){
-  if(!confirm('Delete this project?'))return;
-  const ps=getP();ps.splice(idx,1);saveP(ps);renderAll();
-}
-
-function renderProjectList(){
-  const ps=getP();
+async function renderProjectList(){
+  const ps=await fetchProjects();
+  if(USE_SUPABASE)saveP(ps);
   const list=document.getElementById('projectList');
-  if(!ps.length){list.innerHTML='<div class="empty-list">// No projects yet. Click Add Project to get started.</div>';return;}
+  if(!ps.length){list.innerHTML='<div class="empty-list">// No projects yet.</div>';return;}
   list.innerHTML=ps.map((p,i)=>`
     <div class="item-row">
-      <div class="item-info">
-        <div class="item-name">${p.title}</div>
-        <div class="item-meta">${p.category} · ${p.date||''}</div>
+      <div>
+        <div class="item-name">${p.featured?'⭐ ':''}${p.title}</div>
+        <div class="item-meta"><span class="item-badge">${p.category}</span> · ${p.date||''} · 👁 ${p.views||0} views</div>
       </div>
       <div class="item-actions">
         <button class="edit-btn" onclick="showProjectForm(${i})">Edit</button>
@@ -403,12 +435,15 @@ function renderProjectList(){
     </div>`).join('');
 }
 
+// ===========================
 // BLOGS
+// ===========================
 function showBlogForm(idx=-1){
-  editingBlogIdx=idx;
+  editBIdx=idx;
   const form=document.getElementById('blogForm');
   form.style.display='block';
   document.getElementById('blogFormTitle').textContent=idx===-1?'// Write New Post':'// Edit Post';
+  clearBlogForm();
   if(idx>=0){
     const b=getB()[idx];
     document.getElementById('btitle').value=b.title||'';
@@ -416,48 +451,56 @@ function showBlogForm(idx=-1){
     document.getElementById('bexc').value=b.excerpt||'';
     document.getElementById('bcontent').value=b.content||'';
     document.getElementById('bdate').value=b.date||'';
-  } else {
-    ['btitle','bexc','bcontent','bdate'].forEach(id=>document.getElementById(id).value='');
-    document.getElementById('bdate').value=new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'});
+    document.getElementById('bimgurl').value=b.image_url||'';
+    if(b.image_url||b.image){const prev=document.getElementById('bimgPreview');prev.src=b.image_url||b.image;prev.style.display='block';}
   }
   form.scrollIntoView({behavior:'smooth'});
 }
 
-function cancelBlogForm(){document.getElementById('blogForm').style.display='none';editingBlogIdx=-1;}
-
-function saveBlog(){
+async function saveBlog(){
   const title=document.getElementById('btitle').value.trim();
   const exc=document.getElementById('bexc').value.trim();
   const content=document.getElementById('bcontent').value.trim();
-  if(!title||!exc||!content){alert('Title, excerpt, and content are required.');return;}
+  if(!title||!exc||!content){showError('bError','Title, excerpt, and content are required.');return;}
+  const imgUrl=document.getElementById('bimgurl').value.trim()||document.getElementById('bimgData').value||'';
   const post={
     title,excerpt:exc,content,
     category:document.getElementById('bcat').value,
-    date:document.getElementById('bdate').value||new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'})
+    date:document.getElementById('bdate').value||new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'}),
+    image_url:imgUrl,
+    views:0
   };
-  const bs=getB();
-  if(editingBlogIdx>=0) bs[editingBlogIdx]=post;
-  else bs.unshift(post);
-  saveB(bs);
-  const msg=document.getElementById('bSuccess');msg.style.display='inline';setTimeout(()=>msg.style.display='none',2500);
-  cancelBlogForm();
+  if(USE_SUPABASE){
+    try{
+      if(editBIdx>=0){const id=getB()[editBIdx].id;await sb.from('blogs').update(post).eq('id',id);}
+      else{await sb.from('blogs').insert([post]);}
+    }catch(e){showError('bError','Supabase error: '+e.message);return;}
+  } else {
+    const bs=getB();
+    if(editBIdx>=0)bs[editBIdx]={...bs[editBIdx],...post};
+    else bs.unshift({...post,id:Date.now().toString()});
+    saveB(bs);
+  }
+  showSuccess('bSuccess');cancelForm('blogForm');renderAll();
+}
+
+async function deleteBlog(idx){
+  if(!confirm('Delete this post?'))return;
+  if(USE_SUPABASE){const b=getB()[idx];await sb.from('blogs').delete().eq('id',b.id);}
+  else{const bs=getB();bs.splice(idx,1);saveB(bs);}
   renderAll();
 }
 
-function deleteBlog(idx){
-  if(!confirm('Delete this post?'))return;
-  const bs=getB();bs.splice(idx,1);saveB(bs);renderAll();
-}
-
-function renderBlogList(){
-  const bs=getB();
+async function renderBlogList(){
+  const bs=await fetchBlogs();
+  if(USE_SUPABASE)saveB(bs);
   const list=document.getElementById('blogList');
-  if(!bs.length){list.innerHTML='<div class="empty-list">// No blog posts yet. Click Write Post to get started.</div>';return;}
+  if(!bs.length){list.innerHTML='<div class="empty-list">// No blog posts yet.</div>';return;}
   list.innerHTML=bs.map((b,i)=>`
     <div class="item-row">
-      <div class="item-info">
+      <div>
         <div class="item-name">${b.title}</div>
-        <div class="item-meta">${b.category} · ${b.date}</div>
+        <div class="item-meta"><span class="item-badge">${b.category}</span> · ${b.date} · 👁 ${b.views||0} views</div>
       </div>
       <div class="item-actions">
         <button class="edit-btn" onclick="showBlogForm(${i})">Edit</button>
@@ -466,7 +509,22 @@ function renderBlogList(){
     </div>`).join('');
 }
 
-function renderAll(){renderStats();renderProjectList();renderBlogList();}
+// ===========================
+// STATS
+// ===========================
+async function renderStats(){
+  const ps=getP();const bs=getB();
+  document.getElementById('statsRow').innerHTML=`
+    <div class="stat-box"><div class="stat-box-num">${ps.length}</div><div class="stat-box-label">Projects</div></div>
+    <div class="stat-box"><div class="stat-box-num">${bs.length}</div><div class="stat-box-label">Blog Posts</div></div>
+    <div class="stat-box"><div class="stat-box-num">${ps.filter(p=>p.featured).length}</div><div class="stat-box-label">Featured</div></div>
+    <div class="stat-box"><div class="stat-box-num">${ps.reduce((a,p)=>a+(p.views||0),0)+bs.reduce((a,b)=>a+(b.views||0),0)}</div><div class="stat-box-label">Total Views</div></div>`;
+}
+
+function showSuccess(id){const el=document.getElementById(id);el.style.display='inline';setTimeout(()=>el.style.display='none',2500);}
+function showError(id,msg){const el=document.getElementById(id);el.textContent=msg;el.style.display='inline';setTimeout(()=>el.style.display='none',4000);}
+
+async function renderAll(){renderStats();await renderProjectList();await renderBlogList();}
 </script>
 </body>
 </html>
