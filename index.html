@@ -533,6 +533,7 @@
         <p>Open to cybersecurity roles, collaborations, and conversations about tech education.</p>
         <div class="clinks">
           <a href="https://linkedin.com/in/mohamed-2-mohamud" target="_blank" class="clink"><div class="clicon">in</div>linkedin.com/in/mohamed-2-mohamud</a>
+          <a href="https://kulaninstitute.org" target="_blank" class="clink"><div class="clicon">K</div>kulaninstitute.org</a>
           <a href="https://mmohamud.me" target="_blank" class="clink"><div class="clicon">M</div>mmohamud.me</a>
         </div>
       </div>
@@ -555,11 +556,23 @@
 
 <script>
 // SUPABASE
-const SUPABASE_URL = 'https://dmnrtvkauymnzytqkmvc.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtbnJ0dmthdXltbnp5dHFrbXZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4MDg0OTksImV4cCI6MjA5MDM4NDQ5OX0.mEFYJYjvsr2pEgCm5pSMZ2xCYVO8XRS8oiRCkNu-fUM';
-const USE_SUPABASE=SUPABASE_URL&&SUPABASE_KEY;
+// ============================================================
+// PASTE YOUR SUPABASE CREDENTIALS HERE (same as admin.html)
+// Find them at: supabase.com → your project → Settings → API
+// ============================================================
+const SUPABASE_URL='https://dmnrtvkauymnzytqkmvc.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtbnJ0dmthdXltbnp5dHFrbXZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4MDg0OTksImV4cCI6MjA5MDM4NDQ5OX0.mEFYJYjvsr2pEgCm5pSMZ2xCYVO8XRS8oiRCkNu-fUM';
+const USE_SUPABASE=!!(SUPABASE_URL&&SUPABASE_KEY);
 let sb=null;
-if(USE_SUPABASE)sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+if(USE_SUPABASE){
+  try{sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);}
+  catch(e){console.error('Supabase init failed:',e);}
+} else {
+  // Credentials missing — data will only load from localStorage.
+  // If you saved posts via admin.html with Supabase, they won't
+  // appear here until you add the same credentials to this file.
+  console.warn('Supabase credentials not set in index.html. Using localStorage fallback.');
+}
 
 // THEME
 function getAutoTheme(){const h=new Date().getHours();if(!(h>=18||h<6)&&window.matchMedia)return window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';return(h>=18||h<6)?'dark':'light';}
@@ -601,8 +614,34 @@ window.addEventListener('scroll',()=>{
 const obs=new IntersectionObserver(e=>e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('visible');}),{threshold:0.08});
 
 // DATA
-async function fetchProjects(){if(USE_SUPABASE){const{data}=await sb.from('projects').select('*').order('featured',{ascending:false}).order('created_at',{ascending:false});return data||[];}return JSON.parse(localStorage.getItem('mm_projects')||'[]');}
-async function fetchBlogs(){if(USE_SUPABASE){const{data}=await sb.from('blogs').select('*').eq('status','published').order('created_at',{ascending:false});return data||[];}return JSON.parse(localStorage.getItem('mm_blogs')||'[]').filter(b=>b.status!=='draft');}
+async function fetchProjects(){
+  if(USE_SUPABASE){
+    try{
+      const{data,error}=await sb.from('projects').select('*').order('featured',{ascending:false}).order('created_at',{ascending:false});
+      if(error)throw error;
+      if(data&&data.length)localStorage.setItem('mm_projects_cache',JSON.stringify(data));
+      return data||[];
+    }catch(e){
+      console.error('Supabase fetchProjects failed, using cache:',e);
+      try{return JSON.parse(localStorage.getItem('mm_projects_cache')||'[]');}catch{return[];}
+    }
+  }
+  try{return JSON.parse(localStorage.getItem('mm_projects')||'[]');}catch{return[];}
+}
+async function fetchBlogs(){
+  if(USE_SUPABASE){
+    try{
+      const{data,error}=await sb.from('blogs').select('*').eq('status','published').order('created_at',{ascending:false});
+      if(error)throw error;
+      if(data&&data.length)localStorage.setItem('mm_blogs_cache',JSON.stringify(data));
+      return data||[];
+    }catch(e){
+      console.error('Supabase fetchBlogs failed, using cache:',e);
+      try{return JSON.parse(localStorage.getItem('mm_blogs_cache')||'[]');}catch{return[];}
+    }
+  }
+  try{return JSON.parse(localStorage.getItem('mm_blogs')||'[]').filter(b=>b.status!=='draft');}catch{return[];}
+}
 async function fetchComments(blogId){if(USE_SUPABASE){const{data}=await sb.from('comments').select('*').eq('blog_id',blogId).eq('status','approved').order('created_at',{ascending:true});return data||[];}return[];}
 async function submitComment(blogId,name,email,text){if(USE_SUPABASE){const{error}=await sb.from('comments').insert([{blog_id:blogId,name,email,content:text,status:'pending'}]);return!error;}return true;}
 async function incViews(table,id,idx){if(USE_SUPABASE)await sb.rpc(`increment_${table}_views`,{row_id:id});else{const d=JSON.parse(localStorage.getItem(`mm_${table}`)||'[]');if(d[idx]){d[idx].views=(d[idx].views||0)+1;localStorage.setItem(`mm_${table}`,JSON.stringify(d));}}}
@@ -669,9 +708,18 @@ async function renderBlogs(q='',tagFilter='all'){
   if(allTags.length){tf.innerHTML='<button class="tag-btn active" onclick="filterByTag(\'all\',this)">All</button>'+allTags.map(t=>`<button class="tag-btn" onclick="filterByTag('${t}',this)">${t}</button>`).join('');}
   else tf.innerHTML='';
 
-  if(!bs.length){g.innerHTML='<div class="empty">// No blog posts yet.</div>';return;}
-  g.innerHTML=bs.map((b,i)=>`
-    <div class="bcard${isRead(b.id||i)?' read-post':''}" id="bc${i}" onclick="openBlog(${i})">
+  if(!bs.length){
+    const hint=!USE_SUPABASE
+      ?'// No blog posts found. If you added posts in the admin panel using Supabase, make sure the same SUPABASE_URL and SUPABASE_KEY are pasted into this file (index.html) too.'
+      :'// No published blog posts yet.';
+    g.innerHTML=`<div class="empty">${hint}</div>`;
+    return;
+  }
+  // FIX: use allBlogs.indexOf(b) so clicking a card after filtering opens
+  // the correct post — not whatever is at that position in the full array.
+  g.innerHTML=bs.map((b,i)=>{
+    const fullIdx=allBlogs.indexOf(b); // real index into allBlogs
+    return`<div class="bcard${isRead(b.id||String(fullIdx))?' read-post':''}" id="bc${i}" onclick="openBlog(${fullIdx})">
       <div class="bcard-img">${b.image_url?`<img src="${b.image_url}" alt="${b.title}" loading="lazy"/>`:'<span class="bcard-img-ph">// NO IMAGE</span>'}</div>
       <div class="bcard-body">
         <div class="btag">${b.category}</div>
@@ -680,7 +728,8 @@ async function renderBlogs(q='',tagFilter='all'){
         ${b.tags?`<div class="bcard-tags">${b.tags.split(',').map(t=>`<span class="bcard-tag">${t.trim()}</span>`).join('')}</div>`:''}
         <div class="bcard-footer"><span class="bdate">${b.date}</span><div class="bcard-meta"><span class="breadtime">📖 ${readTime(b.content)} min</span><span class="bviews">👁 ${b.views||0}</span></div></div>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
   bs.forEach((_,i)=>{const el=document.getElementById(`bc${i}`);if(el)obs.observe(el);});
 }
 
