@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin | mmohamud.me</title>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet"/>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
   <style>
@@ -92,26 +92,84 @@
     .tgl-lbl{font-size:.82rem;color:var(--text2);}
 
     /* EDITOR */
-    .ewrap{border:1.5px solid var(--ebd);border-radius:10px;overflow:hidden;background:var(--eb);}
+    .ewrap{border:1.5px solid var(--ebd);border-radius:10px;overflow:hidden;background:var(--eb);transition:all .3s;}
+    .ewrap.fullscreen{position:fixed;inset:0;z-index:500;border-radius:0;border:none;display:flex;flex-direction:column;}
+    .ewrap.fullscreen .earea{flex:1;max-height:none;min-height:0;}
+    .ewrap.fullscreen .etb{border-radius:0;}
     .etb{background:var(--tb);border-bottom:1px solid var(--ebd);padding:8px 12px;display:flex;gap:3px;flex-wrap:wrap;align-items:center;}
     .eb{background:transparent;border:1px solid transparent;border-radius:4px;padding:4px 8px;cursor:pointer;font-size:.8rem;color:var(--text);transition:all .2s;font-family:'DM Sans',sans-serif;line-height:1;}
     .eb:hover{background:var(--bg3);border-color:var(--border);}
+    .eb.active{background:var(--accent);color:var(--bg);border-color:var(--accent);}
     .esep{width:1px;height:18px;background:var(--border);margin:0 3px;flex-shrink:0;}
     .esel{background:var(--tb);border:1px solid var(--border);border-radius:4px;padding:3px 7px;font-size:.78rem;color:var(--text);cursor:pointer;outline:none;}
     .esel option{background:var(--bg);}
-    .earea{min-height:400px;max-height:600px;padding:18px 20px;outline:none;font-size:.95rem;line-height:1.85;color:var(--text);font-family:'DM Sans',sans-serif;overflow-y:auto;}
-    .earea:empty::before{content:attr(data-placeholder);color:var(--gray);pointer-events:none;}
-    .earea h1{font-size:1.5rem;font-weight:700;margin:14px 0 8px;}
-    .earea h2{font-size:1.2rem;font-weight:700;margin:12px 0 7px;}
-    .earea h3{font-size:1rem;font-weight:700;margin:10px 0 5px;}
-    .earea p{margin-bottom:10px;}
-    .earea blockquote{border-left:4px solid var(--accent);padding:9px 15px;margin:10px 0;background:var(--bg3);border-radius:0 6px 6px 0;font-style:italic;color:var(--text2);}
-    .earea ul,.earea ol{margin:9px 0 12px 22px;}
-    .earea li{margin-bottom:4px;}
+    .earea{min-height:400px;max-height:600px;padding:22px 26px;outline:none;font-size:1rem;line-height:1.9;color:var(--text);font-family:'Lora',Georgia,serif;overflow-y:auto;caret-color:var(--accent);}
+    .earea.sans-font{font-family:'DM Sans',sans-serif;}
+    .earea:empty::before{content:attr(data-placeholder);color:var(--gray);pointer-events:none;font-family:'DM Sans',sans-serif;font-size:.9rem;font-style:italic;}
+    .earea h1{font-size:1.6rem;font-weight:700;margin:20px 0 10px;color:var(--text);font-family:'DM Sans',sans-serif;line-height:1.2;}
+    .earea h2{font-size:1.25rem;font-weight:700;margin:16px 0 8px;color:var(--text);font-family:'DM Sans',sans-serif;line-height:1.3;}
+    .earea h3{font-size:1.05rem;font-weight:700;margin:13px 0 6px;color:var(--text);font-family:'DM Sans',sans-serif;}
+    .earea p{margin-bottom:12px;color:var(--text);}
+    .earea strong{font-weight:700;color:var(--text);}
+    .earea em{font-style:italic;}
+    .earea blockquote{border-left:4px solid var(--accent);padding:10px 18px;margin:14px 0;background:var(--bg3);border-radius:0 8px 8px 0;font-style:italic;color:var(--text2);}
+    .earea ul,.earea ol{margin:10px 0 14px 24px;color:var(--text);}
+    .earea li{margin-bottom:5px;line-height:1.7;}
     .earea a{color:var(--accent);text-decoration:underline;}
-    .earea code{font-family:'IBM Plex Mono',monospace;background:var(--bg3);padding:1px 5px;border-radius:3px;font-size:.84em;color:var(--accent);}
-    .earea hr{border:none;border-top:1px solid var(--border);margin:14px 0;}
-    .efooter{background:var(--tb);border-top:1px solid var(--ebd);padding:7px 12px;display:flex;justify-content:space-between;align-items:center;font-size:.7rem;color:var(--gray);}
+    .earea code{font-family:'IBM Plex Mono',monospace;background:var(--bg3);padding:2px 7px;border-radius:4px;font-size:.84em;color:var(--accent);}
+    .earea pre{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px;overflow-x:auto;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:.84em;}
+    .earea hr{border:none;border-top:2px solid var(--border);margin:20px 0;}
+    .earea img{max-width:100%;border-radius:8px;margin:14px 0;display:block;}
+    .earea font{color:inherit!important;font-family:inherit!important;font-size:inherit!important;}
+    .earea span[style*="color"]{color:inherit!important;}
+    .earea span[style*="font-family"]{font-family:inherit!important;}
+    .efooter{background:var(--tb);border-top:1px solid var(--ebd);padding:7px 12px;display:flex;justify-content:space-between;align-items:center;font-size:.7rem;color:var(--gray);gap:10px;flex-wrap:wrap;}
+
+    /* WORD GOAL RING */
+    .goal-wrap{display:flex;align-items:center;gap:8px;}
+    .goal-ring{position:relative;width:36px;height:36px;flex-shrink:0;}
+    .goal-ring svg{transform:rotate(-90deg);}
+    .goal-ring circle{fill:none;stroke-width:3;}
+    .goal-ring .bg-ring{stroke:var(--bg3);}
+    .goal-ring .fg-ring{stroke:var(--accent);stroke-linecap:round;transition:stroke-dashoffset .4s ease;}
+    .goal-ring .ring-pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:.48rem;color:var(--accent);}
+    .goal-input{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-size:.72rem;color:var(--text);width:55px;outline:none;font-family:'IBM Plex Mono',monospace;text-align:center;}
+    .goal-input:focus{border-color:var(--accent);}
+
+    /* SEO SCORE */
+    .seo-wrap{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-top:10px;}
+    .seo-title{font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:var(--accent);letter-spacing:2px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;}
+    .seo-score-badge{font-size:.72rem;font-weight:700;padding:2px 10px;border-radius:20px;}
+    .seo-score-badge.good{background:rgba(22,163,74,.15);color:var(--success);}
+    .seo-score-badge.ok{background:rgba(217,119,6,.15);color:var(--warn);}
+    .seo-score-badge.poor{background:rgba(220,38,38,.1);color:var(--danger);}
+    .seo-list{display:flex;flex-direction:column;gap:5px;}
+    .seo-item{display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--text2);}
+    .seo-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+    .seo-dot.pass{background:var(--success);}
+    .seo-dot.fail{background:var(--danger);}
+
+    /* SHORTCUTS PANEL */
+    .shortcuts-wrap{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-top:10px;display:none;}
+    .shortcuts-wrap.open{display:block;}
+    .shortcuts-title{font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:var(--accent);letter-spacing:2px;margin-bottom:10px;}
+    .shortcuts-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+    .shortcut-item{display:flex;justify-content:space-between;align-items:center;font-size:.76rem;color:var(--text2);}
+    .kbd{font-family:'IBM Plex Mono',monospace;font-size:.66rem;background:var(--card);border:1px solid var(--border);border-radius:4px;padding:2px 6px;color:var(--accent);}
+
+    /* CHANGE PASSWORD */
+    .cp-wrap{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px;margin-bottom:20px;box-shadow:0 2px 8px var(--shadow);}
+    .cp-title{font-family:'IBM Plex Mono',monospace;font-size:.74rem;color:var(--accent);letter-spacing:2px;margin-bottom:14px;text-transform:uppercase;}
+    .cp-row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;}
+    .cp-field{background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.86rem;outline:none;transition:border-color .3s;flex:1;min-width:150px;}
+    .cp-field::placeholder{color:var(--gray);}
+    .cp-field:focus{border-color:var(--accent);}
+    .cp-btn{background:var(--accent);color:var(--bg);border:none;padding:9px 20px;border-radius:8px;font-weight:700;font-size:.83rem;cursor:pointer;white-space:nowrap;transition:all .3s;}
+    .cp-btn:hover{opacity:.85;}
+
+    /* SESSION TIMEOUT WARNING */
+    .session-warn{display:none;position:fixed;bottom:24px;left:24px;z-index:9998;background:var(--card);border:1.5px solid var(--warn);color:var(--warn);font-family:'IBM Plex Mono',monospace;font-size:.76rem;padding:12px 18px;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.15);max-width:280px;line-height:1.5;}
+    .session-warn button{display:block;margin-top:8px;background:var(--warn);color:var(--bg);border:none;padding:5px 14px;border-radius:5px;font-size:.72rem;cursor:pointer;font-family:'IBM Plex Mono',monospace;width:100%;}
     .ewc,.ert{font-family:'IBM Plex Mono',monospace;font-size:.7rem;}
     .ert{color:var(--accent);}
 
@@ -221,6 +279,7 @@
       <button class="dtab" onclick="switchPanel('blogs',this)">Blog Posts</button>
       <button class="dtab" id="ctab" onclick="switchPanel('comments',this)">Comments</button>
       <button class="dtab" onclick="switchPanel('analytics',this)">Analytics</button>
+      <button class="dtab" onclick="switchPanel('settings',this)">Settings</button>
     </div>
     <div class="dact">
       <button class="tbtn" onclick="toggleTheme()"><span id="tI">🌙</span><span id="tL">Dark</span></button>
@@ -310,7 +369,7 @@
               <span class="ert" id="eRT">0 min read</span>
             </div>
           </div>
-          <div class="ewrap">
+          <div class="ewrap" id="eWrap">
             <div class="etb">
               <select class="esel" onchange="eCmd('formatBlock',this.value);this.value=''">
                 <option value="">Paragraph</option>
@@ -321,31 +380,73 @@
                 <option value="pre">Code Block</option>
               </select>
               <div class="esep"></div>
-              <button class="eb" onclick="eCmd('bold')" title="Bold"><b>B</b></button>
-              <button class="eb" onclick="eCmd('italic')" title="Italic"><i>I</i></button>
-              <button class="eb" onclick="eCmd('underline')" title="Underline"><u>U</u></button>
+              <button class="eb" onclick="eCmd('bold')" title="Bold (Ctrl+B)"><b>B</b></button>
+              <button class="eb" onclick="eCmd('italic')" title="Italic (Ctrl+I)"><i>I</i></button>
+              <button class="eb" onclick="eCmd('underline')" title="Underline (Ctrl+U)"><u>U</u></button>
               <button class="eb" onclick="eCmd('strikeThrough')" title="Strikethrough"><s>S</s></button>
               <div class="esep"></div>
               <button class="eb" onclick="eCmd('insertUnorderedList')" title="Bullet List">• List</button>
               <button class="eb" onclick="eCmd('insertOrderedList')" title="Numbered List">1. List</button>
               <div class="esep"></div>
-              <button class="eb" onclick="eCmd('justifyLeft')" title="Left">⬅</button>
+              <button class="eb" onclick="eCmd('justifyLeft')" title="Align Left">⬅</button>
               <button class="eb" onclick="eCmd('justifyCenter')" title="Center">↔</button>
-              <button class="eb" onclick="eCmd('justifyRight')" title="Right">➡</button>
+              <button class="eb" onclick="eCmd('justifyRight')" title="Align Right">➡</button>
               <div class="esep"></div>
-              <button class="eb" onclick="eInsLink()" title="Link">🔗 Link</button>
-              <button class="eb" onclick="eInsImg()" title="Image">🖼 Image</button>
-              <button class="eb" onclick="eCmd('insertHorizontalRule')" title="Divider">— Rule</button>
+              <button class="eb" onclick="eInsLink()" title="Insert Link">🔗</button>
+              <button class="eb" onclick="eInsImg()" title="Insert Image">🖼</button>
+              <button class="eb" onclick="eCmd('insertHorizontalRule')" title="Divider">—</button>
               <div class="esep"></div>
-              <button class="eb" onclick="eCmd('undo')" title="Undo">↩</button>
-              <button class="eb" onclick="eCmd('redo')" title="Redo">↪</button>
+              <button class="eb" onclick="eCmd('undo')" title="Undo (Ctrl+Z)">↩</button>
+              <button class="eb" onclick="eCmd('redo')" title="Redo (Ctrl+Y)">↪</button>
+              <div class="esep"></div>
+              <!-- FONT TOGGLE -->
+              <button class="eb" id="fontToggleBtn" onclick="toggleEditorFont()" title="Toggle Serif/Sans font">Aa Serif</button>
+              <div class="esep"></div>
+              <!-- FULLSCREEN -->
+              <button class="eb" id="fsBtn" onclick="toggleFullscreen()" title="Fullscreen (Escape to exit)">⛶ Full</button>
+              <!-- SHORTCUTS -->
+              <button class="eb" onclick="toggleShortcuts()" title="Keyboard shortcuts">⌨</button>
             </div>
             <div class="earea" id="bEditor" contenteditable="true"
               data-placeholder="Start writing your blog post here... Use Heading 2 for main sections so a Table of Contents auto-generates on the site."
-              oninput="onEditorInput()"></div>
+              oninput="onEditorInput()"
+              onpaste="handlePaste(event)"></div>
             <div class="efooter">
-              <span>Tip: Heading 2 = main sections · Heading 3 = sub-sections · TOC auto-generates for 2+ headings</span>
+              <span id="eTip">Tip: Heading 2 = main sections · Heading 3 = sub-sections · TOC auto-generates for 2+ headings</span>
+              <div class="goal-wrap">
+                <span style="font-size:.7rem;color:var(--gray);">Goal:</span>
+                <input type="number" class="goal-input" id="goalInput" value="600" min="100" max="5000" onchange="updateGoalRing()" title="Word count goal"/>
+                <div class="goal-ring">
+                  <svg width="36" height="36" viewBox="0 0 36 36">
+                    <circle class="bg-ring" cx="18" cy="18" r="15.9" stroke-dasharray="100 100"/>
+                    <circle class="fg-ring" id="goalRingFg" cx="18" cy="18" r="15.9" stroke-dasharray="0 100"/>
+                  </svg>
+                  <div class="ring-pct" id="goalPct">0%</div>
+                </div>
+              </div>
             </div>
+          </div>
+          <!-- SHORTCUTS PANEL -->
+          <div class="shortcuts-wrap" id="shortcutsWrap">
+            <div class="shortcuts-title">// KEYBOARD SHORTCUTS</div>
+            <div class="shortcuts-grid">
+              <div class="shortcut-item"><span>Bold</span><span class="kbd">Ctrl+B</span></div>
+              <div class="shortcut-item"><span>Italic</span><span class="kbd">Ctrl+I</span></div>
+              <div class="shortcut-item"><span>Underline</span><span class="kbd">Ctrl+U</span></div>
+              <div class="shortcut-item"><span>Undo</span><span class="kbd">Ctrl+Z</span></div>
+              <div class="shortcut-item"><span>Redo</span><span class="kbd">Ctrl+Y</span></div>
+              <div class="shortcut-item"><span>Exit Fullscreen</span><span class="kbd">Escape</span></div>
+              <div class="shortcut-item"><span>Select All</span><span class="kbd">Ctrl+A</span></div>
+              <div class="shortcut-item"><span>Save Draft</span><span class="kbd">Ctrl+S</span></div>
+            </div>
+          </div>
+          <!-- SEO SCORE -->
+          <div class="seo-wrap" id="seoWrap">
+            <div class="seo-title">
+              <span>// SEO SCORE</span>
+              <span class="seo-score-badge poor" id="seoBadge">0 / 6</span>
+            </div>
+            <div class="seo-list" id="seoList"></div>
           </div>
         </div>
         <div class="fg" style="margin-top:6px">
@@ -394,7 +495,53 @@
         <div class="achart"><div class="actitle">Content Overview</div><canvas id="ovChart" height="180"></canvas></div>
       </div>
     </div>
+
+    <!-- SETTINGS PANEL -->
+    <div class="panel" id="settingsPanel">
+      <div class="lh"><div class="lt">// Settings</div></div>
+      <!-- Change Password -->
+      <div class="cp-wrap">
+        <div class="cp-title">// Change Admin Password</div>
+        <div class="cp-row">
+          <input type="password" id="cpCurrent" class="cp-field" placeholder="Current password"/>
+          <input type="password" id="cpNew" class="cp-field" placeholder="New password (min 8 chars)"/>
+          <input type="password" id="cpConfirm" class="cp-field" placeholder="Confirm new password"/>
+          <button class="cp-btn" onclick="changePassword()">Update Password</button>
+        </div>
+        <div style="margin-top:8px;font-size:.76rem;color:var(--gray);">Password is stored in your browser. Clear browser data to reset to default.</div>
+      </div>
+      <!-- Session Timeout Setting -->
+      <div class="cp-wrap">
+        <div class="cp-title">// Session Timeout</div>
+        <div class="cp-row" style="align-items:center;">
+          <span style="font-size:.86rem;color:var(--text2);">Auto-logout after</span>
+          <select id="sessionTimeout" class="ff" style="width:auto;flex:none;" onchange="saveSessionSetting()">
+            <option value="15">15 minutes</option>
+            <option value="30" selected>30 minutes</option>
+            <option value="60">1 hour</option>
+            <option value="120">2 hours</option>
+            <option value="0">Never</option>
+          </select>
+          <span style="font-size:.86rem;color:var(--text2);">of inactivity</span>
+        </div>
+      </div>
+      <!-- About -->
+      <div class="cp-wrap">
+        <div class="cp-title">// About This Panel</div>
+        <div style="font-size:.84rem;color:var(--text2);line-height:1.8;">
+          Admin panel for <strong>mmohamud.me</strong><br/>
+          Supabase project: <span style="font-family:'IBM Plex Mono',monospace;color:var(--accent);">dmnrtvkauymnzytqkmvc</span><br/>
+          Built by Mohamed Mohamud · 2026
+        </div>
+      </div>
+    </div>
   </div>
+</div>
+
+<!-- SESSION TIMEOUT WARNING -->
+<div class="session-warn" id="sessionWarn">
+  ⚠ You will be logged out in 2 minutes due to inactivity.
+  <button onclick="resetSessionTimer()">Stay Logged In</button>
 </div>
 
 <!-- PREVIEW MODAL -->
@@ -418,7 +565,7 @@ const USE_SB=!!(SUPABASE_URL&&SUPABASE_KEY);
 let sb=null;
 if(USE_SB){try{sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);}catch(e){console.error('Supabase init:',e);}}
 
-const PASS='kulan2026';
+// Password managed via localStorage — see changePassword() and doLogin()
 let ePIdx=-1,eBIdx=-1,allC=[],cFilter='all';
 let asTimer=null;
 let catChartI=null,ovChartI=null;
@@ -440,22 +587,7 @@ applyTheme(localStorage.getItem('mm_at')||getAT());
 // ============================================================
 // AUTH
 // ============================================================
-function doLogin(){
-  if(document.getElementById('pwIn').value===PASS){
-    document.getElementById('loginScreen').style.display='none';
-    document.getElementById('dashboard').style.display='block';
-    checkSB();renderAll();
-  } else {
-    document.getElementById('lErr').style.display='block';
-    document.getElementById('pwIn').value='';
-    document.getElementById('pwIn').focus();
-  }
-}
-function doLogout(){
-  document.getElementById('dashboard').style.display='none';
-  document.getElementById('loginScreen').style.display='flex';
-  document.getElementById('pwIn').value='';
-}
+// doLogin and doLogout defined below with session support
 
 // ============================================================
 // SUPABASE CHECK
@@ -494,17 +626,9 @@ async function fetchAllC(){
 // ============================================================
 // PANELS
 // ============================================================
-function switchPanel(p,btn){
-  document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
-  document.querySelectorAll('.dtab').forEach(x=>x.classList.remove('active'));
-  document.getElementById(p+'Panel').classList.add('active');
-  btn.classList.add('active');
-  if(p==='comments')renderCommentList();
-  if(p==='analytics')renderAnalytics();
-}
 function cancelForm(id){document.getElementById(id).style.display='none';ePIdx=-1;eBIdx=-1;clearTimeout(asTimer);}
 
-// ============================================================
+// ------------------------------------------------------------
 // IMAGE COMPRESSION
 // ============================================================
 function handleImg(input,dataId,prevId,urlId){
@@ -530,16 +654,155 @@ function handleImg(input,dataId,prevId,urlId){
 // ============================================================
 // RICH TEXT EDITOR
 // ============================================================
-function eCmd(cmd,val=null){document.getElementById('bEditor').focus();document.execCommand(cmd,false,val);onEditorInput();}
-function eInsLink(){const url=prompt('Enter URL:');if(url)eCmd('createLink',url);}
-function eInsImg(){const url=prompt('Enter image URL:');if(url)eCmd('insertImage',url);}
+let editorFont='serif'; // serif | sans
+let isFullscreen=false;
+
+function eCmd(cmd,val=null){
+  document.getElementById('bEditor').focus();
+  document.execCommand(cmd,false,val);
+  onEditorInput();
+}
+function eInsLink(){
+  const url=prompt('Enter URL (include https://):');
+  if(url&&url.trim())eCmd('createLink',url.trim());
+}
+function eInsImg(){
+  const url=prompt('Enter image URL:');
+  if(url&&url.trim())eCmd('insertImage',url.trim());
+}
+
+// Font toggle — Serif (Lora) vs Sans (DM Sans)
+function toggleEditorFont(){
+  const ed=document.getElementById('bEditor');
+  const btn=document.getElementById('fontToggleBtn');
+  editorFont=editorFont==='serif'?'sans':'serif';
+  ed.classList.toggle('sans-font',editorFont==='sans');
+  btn.textContent=editorFont==='serif'?'Aa Serif':'Aa Sans';
+  btn.classList.toggle('active',editorFont==='sans');
+  localStorage.setItem('mm_editor_font',editorFont);
+}
+
+// Fullscreen toggle
+function toggleFullscreen(){
+  const wrap=document.getElementById('eWrap');
+  const btn=document.getElementById('fsBtn');
+  isFullscreen=!isFullscreen;
+  wrap.classList.toggle('fullscreen',isFullscreen);
+  btn.textContent=isFullscreen?'✕ Exit':'⛶ Full';
+  btn.classList.toggle('active',isFullscreen);
+  document.body.style.overflow=isFullscreen?'hidden':'';
+  if(isFullscreen)document.getElementById('bEditor').focus();
+}
+
+// Escape key exits fullscreen, Ctrl+S saves draft
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&isFullscreen)toggleFullscreen();
+  if(e.ctrlKey&&e.key==='s'){e.preventDefault();schedAS();toast('Draft saved','success');}
+});
+
+// Shortcuts panel
+function toggleShortcuts(){
+  document.getElementById('shortcutsWrap').classList.toggle('open');
+}
+
+// Paste handler — strips all formatting from Word/Google Docs
+function handlePaste(e){
+  e.preventDefault();
+  const text=e.clipboardData.getData('text/plain');
+  // Try to get HTML but strip it to plain text to avoid garbage styles
+  let html=e.clipboardData.getData('text/html');
+  if(html){
+    const div=document.createElement('div');
+    div.innerHTML=html;
+    // Remove all class/style/id attributes
+    div.querySelectorAll('*').forEach(el=>{
+      el.removeAttribute('class');
+      el.removeAttribute('style');
+      el.removeAttribute('id');
+      el.removeAttribute('lang');
+      // Remove spans entirely, keep content
+      if(el.tagName==='SPAN'||el.tagName==='FONT'){
+        el.replaceWith(...el.childNodes);
+      }
+    });
+    // Remove comments and meta tags Word inserts
+    html=div.innerHTML.replace(/<!--[\s\S]*?-->/g,'').replace(/<o:p[\s\S]*?<\/o:p>/gi,'').replace(/<w:[\s\S]*?>/gi,'').replace(/<\/w:[\s\S]*?>/gi,'').trim();
+    if(html)document.execCommand('insertHTML',false,html);
+    else document.execCommand('insertText',false,text);
+  } else {
+    document.execCommand('insertText',false,text);
+  }
+  onEditorInput();
+}
+
+// Word count, read time, goal ring, SEO score
 function onEditorInput(){
   const el=document.getElementById('bEditor');
-  const words=(el.innerText||'').split(/\s+/).filter(Boolean).length;
+  const text=el.innerText||'';
+  const words=text.split(/\s+/).filter(Boolean).length;
   document.getElementById('eWC').textContent=words+' words';
   document.getElementById('eRT').textContent=Math.max(1,Math.ceil(words/200))+' min read';
+  updateGoalRing(words);
+  updateSEO(words);
   schedAS();
 }
+
+function updateGoalRing(words){
+  if(words===undefined){
+    const el=document.getElementById('bEditor');
+    words=(el.innerText||'').split(/\s+/).filter(Boolean).length;
+  }
+  const goal=parseInt(document.getElementById('goalInput')?.value||600);
+  const pct=Math.min(100,Math.round(words/goal*100));
+  const circ=document.getElementById('goalRingFg');
+  const pctEl=document.getElementById('goalPct');
+  if(circ){circ.setAttribute('stroke-dasharray',pct+' 100');}
+  if(pctEl)pctEl.textContent=pct+'%';
+  // Change color when goal met
+  if(circ){circ.style.stroke=pct>=100?'var(--success)':'var(--accent)';}
+}
+
+function updateSEO(words){
+  const title=(document.getElementById('bT')?.value||'').trim();
+  const exc=(document.getElementById('bEx')?.value||'').trim();
+  const imgUrl=(document.getElementById('bIU')?.value||'').trim()||document.getElementById('bID')?.value||'';
+  const tags=(document.getElementById('bTg')?.value||'').trim();
+  const content=document.getElementById('bEditor')?.innerHTML||'';
+  const hasH2=/<h2/i.test(content);
+
+  const checks=[
+    {label:'Title is set',pass:title.length>0},
+    {label:'Title is 30–60 characters',pass:title.length>=30&&title.length<=60},
+    {label:'Excerpt/description is set',pass:exc.length>0},
+    {label:'Cover image is set',pass:!!imgUrl},
+    {label:'Tags are added',pass:tags.length>0},
+    {label:'Content is over 300 words',pass:(words||0)>=300},
+    {label:'Has at least one Heading 2',pass:hasH2},
+  ];
+
+  const passed=checks.filter(c=>c.pass).length;
+  const badge=document.getElementById('seoBadge');
+  const list=document.getElementById('seoList');
+  if(!badge||!list)return;
+
+  badge.textContent=passed+' / '+checks.length;
+  badge.className='seo-score-badge '+(passed>=6?'good':passed>=4?'ok':'poor');
+  list.innerHTML=checks.map(c=>`
+    <div class="seo-item">
+      <div class="seo-dot ${c.pass?'pass':'fail'}"></div>
+      <span>${c.label}</span>
+    </div>`).join('');
+}
+
+// Init editor preferences
+function initEditor(){
+  const savedFont=localStorage.getItem('mm_editor_font')||'serif';
+  if(savedFont==='sans'){
+    editorFont='serif'; // toggleEditorFont will flip it
+    toggleEditorFont();
+  }
+}
+initEditor();
 
 // ============================================================
 // AUTOSAVE
@@ -750,7 +1013,7 @@ function showBlogForm(idx=-1){
 async function saveBlog(isDraft=false){
   const title=document.getElementById('bT').value.trim();
   const exc=document.getElementById('bEx').value.trim();
-  const content=document.getElementById('bEditor').innerHTML.trim();
+  const content=sanitizeContent(document.getElementById('bEditor').innerHTML.trim());
   if(!title){showErr('bErr','Title is required.');return;}
   if(!exc){showErr('bErr','Excerpt is required.');return;}
   if(!content||content==='<br>'||content===''){showErr('bErr','Content is required.');return;}
@@ -948,8 +1211,149 @@ async function renderStats(){
     <div class="sbox"><div class="snum">${ps.reduce((a,p)=>a+(p.views||0),0)+bs.reduce((a,b)=>a+(b.views||0),0)}</div><div class="slbl">Total Views</div></div>`;
 }
 
-function showSuc(id){const el=document.getElementById(id);if(!el)return;el.style.display='inline';setTimeout(()=>el.style.display='none',2500);}
-function showErr(id,msg){const el=document.getElementById(id);if(!el)return;el.textContent=msg;el.style.display='inline';setTimeout(()=>el.style.display='none',5000);}
+// ============================================================
+// CONTENT SANITIZER — strips browser-injected inline styles
+// that execCommand injects (prevents black text in dark mode)
+// ============================================================
+function sanitizeContent(html){
+  if(!html)return'';
+  const div=document.createElement('div');
+  div.innerHTML=html;
+  div.querySelectorAll('*').forEach(el=>{
+    if(el.tagName==='FONT'){
+      const frag=document.createDocumentFragment();
+      while(el.firstChild)frag.appendChild(el.firstChild);
+      el.replaceWith(frag);
+      return;
+    }
+    if(el.style){
+      ['color','font-family','font-size','background-color','background'].forEach(p=>el.style.removeProperty(p));
+      if(!el.getAttribute('style')||el.getAttribute('style').trim()==='')el.removeAttribute('style');
+    }
+  });
+  return div.innerHTML;
+}
+
+// ============================================================
+// TOAST NOTIFICATIONS — slides in from bottom-right
+// ============================================================
+function toast(msg,type='success'){
+  const colors={success:'var(--success)',error:'var(--danger)',warn:'var(--warn)'};
+  const c=colors[type]||colors.success;
+  const el=document.createElement('div');
+  el.style.cssText='position:fixed;bottom:24px;right:24px;z-index:9999;background:var(--card);border:1.5px solid '+c+';color:'+c+';font-family:\'IBM Plex Mono\',monospace;font-size:.76rem;padding:11px 18px;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.15);transform:translateY(12px);opacity:0;transition:all .3s;max-width:320px;line-height:1.4;';
+  el.textContent=msg;
+  document.body.appendChild(el);
+  requestAnimationFrame(()=>{el.style.opacity='1';el.style.transform='translateY(0)';});
+  setTimeout(()=>{el.style.opacity='0';el.style.transform='translateY(12px)';setTimeout(()=>el.remove(),320);},3200);
+}
+
+function showSuc(id,msg='Saved successfully!'){
+  const el=document.getElementById(id);
+  if(el){el.style.display='inline';setTimeout(()=>el.style.display='none',2500);}
+  toast(msg,'success');
+}
+function showErr(id,msg){
+  const el=document.getElementById(id);
+  if(el){el.textContent=msg;el.style.display='inline';setTimeout(()=>el.style.display='none',5000);}
+  toast(msg,'error');
+}
+
+// ============================================================
+// SESSION TIMEOUT
+// ============================================================
+let sessionTimer=null;
+let sessionWarnTimer=null;
+const SESSION_KEY='mm_admin_session';
+
+function getSessionMins(){return parseInt(localStorage.getItem('mm_session_mins')||'30');}
+
+function resetSessionTimer(){
+  clearTimeout(sessionTimer);clearTimeout(sessionWarnTimer);
+  document.getElementById('sessionWarn').style.display='none';
+  const mins=getSessionMins();
+  if(mins===0)return; // Never timeout
+  // Show warning 2 minutes before
+  const warnMs=(mins-2)*60000;
+  const logoutMs=mins*60000;
+  if(warnMs>0){
+    sessionWarnTimer=setTimeout(()=>{
+      document.getElementById('sessionWarn').style.display='block';
+    },warnMs);
+  }
+  sessionTimer=setTimeout(()=>{
+    document.getElementById('sessionWarn').style.display='none';
+    toast('Session expired. Logging out.','warn');
+    setTimeout(doLogout,1500);
+  },logoutMs);
+}
+
+function saveSessionSetting(){
+  const val=document.getElementById('sessionTimeout')?.value||'30';
+  localStorage.setItem('mm_session_mins',val);
+  resetSessionTimer();
+  toast('Session timeout updated','success');
+}
+
+// Reset timer on any user interaction
+['click','keydown','mousemove','scroll'].forEach(ev=>{
+  document.addEventListener(ev,resetSessionTimer,{passive:true});
+});
+
+// ============================================================
+// CHANGE PASSWORD
+// ============================================================
+let currentPass=localStorage.getItem('mm_admin_pass')||'kulan2026';
+
+function changePassword(){
+  const cur=(document.getElementById('cpCurrent')?.value||'').trim();
+  const nw=(document.getElementById('cpNew')?.value||'').trim();
+  const conf=(document.getElementById('cpConfirm')?.value||'').trim();
+  if(cur!==currentPass){toast('Current password is incorrect.','error');return;}
+  if(nw.length<8){toast('New password must be at least 8 characters.','error');return;}
+  if(nw!==conf){toast('New passwords do not match.','error');return;}
+  currentPass=nw;
+  localStorage.setItem('mm_admin_pass',nw);
+  ['cpCurrent','cpNew','cpConfirm'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  toast('Password updated successfully!','success');
+}
+
+function doLogout(){
+  clearTimeout(sessionTimer);clearTimeout(sessionWarnTimer);
+  document.getElementById('dashboard').style.display='none';
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('pwIn').value='';
+  document.getElementById('sessionWarn').style.display='none';
+}
+
+// Use stored password if available
+function doLogin(){
+  const storedPass=localStorage.getItem('mm_admin_pass')||'kulan2026';
+  if(document.getElementById('pwIn').value===storedPass){
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('dashboard').style.display='block';
+    checkSB();renderAll();resetSessionTimer();
+    // Load session timeout setting
+    const saved=localStorage.getItem('mm_session_mins');
+    if(saved){const sel=document.getElementById('sessionTimeout');if(sel)sel.value=saved;}
+  } else {
+    document.getElementById('lErr').style.display='block';
+    document.getElementById('pwIn').value='';
+    document.getElementById('pwIn').focus();
+  }
+}
+
+// ============================================================
+// SETTINGS PANEL
+// ============================================================
+function switchPanel(p,btn){
+  document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.dtab').forEach(x=>x.classList.remove('active'));
+  document.getElementById(p+'Panel').classList.add('active');
+  btn.classList.add('active');
+  if(p==='comments')renderCommentList();
+  if(p==='analytics')renderAnalytics();
+}
 
 // ============================================================
 // INIT

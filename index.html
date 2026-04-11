@@ -205,7 +205,7 @@
     .toc-list li.h3-item a{padding-left:14px;font-size:.78rem;}
 
     /* PROSE */
-    .bmcontent{font-size:.95rem;color:var(--prose);line-height:1.9;font-family:'Lora',serif;margin-bottom:24px;}
+    .bmcontent{font-size:.95rem;color:var(--prose);line-height:1.9;font-family:'Lora',Georgia,serif;margin-bottom:24px;}
     .bmcontent h1{font-size:1.6rem;font-weight:700;margin:24px 0 12px;color:var(--text);font-family:'DM Sans',sans-serif;}
     .bmcontent h2{font-size:1.3rem;font-weight:700;margin:20px 0 10px;color:var(--text);font-family:'DM Sans',sans-serif;}
     .bmcontent h3{font-size:1.05rem;font-weight:700;margin:16px 0 8px;color:var(--text);font-family:'DM Sans',sans-serif;}
@@ -220,6 +220,11 @@
     .bmcontent pre{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px;overflow-x:auto;margin:14px 0;}
     .bmcontent img{max-width:100%;border-radius:8px;margin:14px 0;}
     .bmcontent hr{border:none;border-top:1px solid var(--border);margin:20px 0;}
+    /* Strip any inline colors/fonts injected by the editor so dark/light mode works correctly */
+    .bmcontent font{color:inherit!important;font-family:inherit!important;font-size:inherit!important;}
+    .bmcontent span[style]{color:inherit!important;font-family:inherit!important;font-size:inherit!important;background:none!important;}
+    .bmcontent *[style*="color"]{color:inherit!important;}
+    .bmcontent *[style*="font-family"]{font-family:inherit!important;}
 
     /* SHARE */
     .share-section{border-top:1px solid var(--border);padding-top:18px;margin-top:4px;}
@@ -809,15 +814,36 @@ const viewedThisSession=new Set();
 // ============================================================
 // RICH TEXT RENDERER — fixed h2/h3 regex
 // ============================================================
+// Strip browser-injected inline colors/fonts from saved HTML
+// so dark/light mode CSS variables always take effect
+function sanitizeHTML(html){
+  if(!html)return'';
+  const div=document.createElement('div');
+  div.innerHTML=html;
+  div.querySelectorAll('*').forEach(el=>{
+    if(el.tagName==='FONT'){
+      const frag=document.createDocumentFragment();
+      while(el.firstChild)frag.appendChild(el.firstChild);
+      el.replaceWith(frag);
+      return;
+    }
+    if(el.style){
+      ['color','font-family','font-size','background-color','background'].forEach(p=>el.style.removeProperty(p));
+      if(!el.getAttribute('style')||el.getAttribute('style').trim()==='')el.removeAttribute('style');
+    }
+  });
+  return div.innerHTML;
+}
+
 function renderContent(c){
   if(!c)return'';
-  // If it's HTML from the rich text editor, return as-is
-  if(c.trim().startsWith('<'))return c;
-  // Plain text / markdown fallback — fixed regex (no inner .replace trick)
+  // If it's HTML from the rich text editor, sanitize then return
+  if(c.trim().startsWith('<'))return sanitizeHTML(c);
+  // Plain text / markdown fallback
   return'<p>'+c
     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
     .replace(/^### (.+)$/gm,'<h3>$1</h3>')
-    .replace(/^## (.+)$/gm,'<h2>$1</h2>')   // FIXED — was using wrong $2 trick
+    .replace(/^## (.+)$/gm,'<h2>$1</h2>')
     .replace(/^# (.+)$/gm,'<h1>$1</h1>')
     .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
     .replace(/\*(.+?)\*/g,'<em>$1</em>')
