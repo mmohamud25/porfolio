@@ -1,570 +1,966 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Admin | mmohamud.me</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<style>
-:root{--tr:0.3s ease;}
-[data-theme="light"]{--bg:#f8fafc;--bg2:#fff;--bg3:#eef2ff;--card:#fff;--border:rgba(26,37,64,0.1);--text:#1a2540;--text2:#3d4f6e;--gray:#64748b;--accent:#0066cc;--shadow:rgba(0,0,0,0.06);--danger:#dc2626;--success:#16a34a;--sk:#e2e8f0;--tb:#f1f5f9;--eb:#f8fafc;}
-[data-theme="dark"]{--bg:#080e1c;--bg2:#0f172a;--bg3:#1a2540;--card:#0f1a2e;--border:rgba(0,212,255,0.1);--text:#eef2ff;--text2:#a0aec0;--gray:#7a8599;--accent:#00d4ff;--shadow:rgba(0,212,255,0.06);--danger:#f87171;--success:#4ade80;--sk:#1a2540;--tb:#1a2540;--eb:#0f1a2e;}
-*{margin:0;padding:0;box-sizing:border-box;}
-body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;transition:background var(--tr),color var(--tr);}
-#loginScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;}
-.login-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:44px;max-width:400px;width:100%;text-align:center;box-shadow:0 4px 24px var(--shadow);}
-.login-logo{font-family:'IBM Plex Mono',monospace;font-size:1.1rem;color:var(--accent);margin-bottom:6px;letter-spacing:3px;}
-.login-sub{font-size:0.8rem;color:var(--gray);margin-bottom:28px;}
-.login-box input[type=password]{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:12px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.88rem;outline:none;margin-bottom:11px;transition:border-color 0.3s;}
-.login-box input[type=password]::placeholder{color:var(--gray);}
-.login-box input[type=password]:focus{border-color:var(--accent);}
-.login-btn{width:100%;background:var(--accent);color:var(--bg);border:none;padding:12px;border-radius:8px;font-weight:700;font-size:0.88rem;cursor:pointer;letter-spacing:1px;transition:all 0.3s;margin-bottom:11px;}
-.login-btn:hover{opacity:0.85;}
-.login-err{color:var(--danger);font-size:0.78rem;margin-top:4px;display:none;}
-.theme-mini{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:6px 14px;cursor:pointer;font-size:0.76rem;color:var(--gray);transition:all 0.3s;margin-top:14px;}
-.theme-mini:hover{border-color:var(--accent);color:var(--accent);}
-#dashboard{display:none;min-height:100vh;}
-.dash-header{background:var(--card);border-bottom:1px solid var(--border);padding:13px 26px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10;transition:background var(--tr);flex-wrap:wrap;gap:9px;}
-.dash-logo{font-family:'IBM Plex Mono',monospace;font-size:0.88rem;color:var(--accent);letter-spacing:2px;}
-.dash-nav{display:flex;gap:5px;flex-wrap:wrap;}
-.dash-tab{font-family:'IBM Plex Mono',monospace;font-size:0.68rem;padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--gray);cursor:pointer;transition:all 0.3s;letter-spacing:1px;position:relative;}
-.dash-tab.active,.dash-tab:hover{border-color:var(--accent);color:var(--accent);background:var(--bg3);}
-.badge{position:absolute;top:-6px;right:-6px;background:var(--danger);color:#fff;font-size:0.58rem;width:15px;height:15px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;}
-.dash-actions{display:flex;gap:7px;align-items:center;}
-.theme-btn{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:5px 12px;cursor:pointer;font-size:0.74rem;color:var(--gray);display:flex;align-items:center;gap:5px;transition:all 0.3s;}
-.theme-btn:hover{border-color:var(--accent);color:var(--accent);}
-.view-site{font-family:'IBM Plex Mono',monospace;font-size:0.68rem;color:var(--gray);text-decoration:none;border:1px solid var(--border);padding:5px 12px;border-radius:6px;transition:all 0.3s;}
-.view-site:hover{color:var(--accent);border-color:var(--accent);}
-.logout-btn{font-family:'IBM Plex Mono',monospace;font-size:0.68rem;color:var(--danger);border:1px solid rgba(220,38,38,0.3);padding:5px 12px;border-radius:6px;cursor:pointer;background:transparent;transition:all 0.3s;}
-.logout-btn:hover{background:rgba(220,38,38,0.1);}
-.dash-body{padding:24px;max-width:1100px;margin:0 auto;}
-.panel{display:none;}.panel.active{display:block;}
-.sb-status{display:flex;align-items:center;gap:8px;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;padding:7px 12px;border-radius:6px;border:1px solid var(--border);margin-bottom:18px;background:var(--card);}
-.sb-dot{width:8px;height:8px;border-radius:50%;}.sb-dot.connected{background:#22c55e;}.sb-dot.local{background:#f0b429;}
-.stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;margin-bottom:22px;}
-.stat-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:15px;box-shadow:0 2px 8px var(--shadow);}
-.stat-box-num{font-family:'IBM Plex Mono',monospace;font-size:1.6rem;color:var(--accent);font-weight:700;margin-bottom:3px;}
-.stat-box-label{font-size:0.7rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px;}
-.analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px;}
-.chart-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:0 2px 8px var(--shadow);}
-.chart-title{font-family:'IBM Plex Mono',monospace;font-size:0.72rem;color:var(--accent);letter-spacing:2px;margin-bottom:14px;text-transform:uppercase;}
-.chart-wrap{position:relative;height:200px;}
-.form-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:26px;margin-bottom:22px;box-shadow:0 2px 8px var(--shadow);}
-.form-title{font-family:'IBM Plex Mono',monospace;font-size:0.76rem;color:var(--accent);letter-spacing:2px;margin-bottom:18px;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center;}
-.autosave-ind{font-size:0.66rem;color:var(--success);display:none;}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.form-grid.full{grid-template-columns:1fr;}
-.fg{display:flex;flex-direction:column;gap:4px;}
-.fg label{font-size:0.76rem;color:var(--gray);}
-.fg input,.fg select,.fg textarea{background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.86rem;outline:none;transition:border-color 0.3s;width:100%;}
-.fg input::placeholder,.fg textarea::placeholder{color:var(--gray);}
-.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--accent);}
-.fg select option{background:var(--bg);}
-.fg textarea{resize:vertical;min-height:80px;line-height:1.6;}
-.fg .hint{font-size:0.68rem;color:rgba(100,116,139,0.7);margin-top:2px;}
-.form-actions{display:flex;gap:9px;margin-top:16px;align-items:center;flex-wrap:wrap;}
-.save-btn{background:var(--accent);color:var(--bg);border:none;padding:9px 24px;border-radius:8px;font-weight:700;font-size:0.82rem;cursor:pointer;letter-spacing:1px;transition:all 0.3s;}
-.save-btn:hover{opacity:0.85;}
-.draft-btn{background:var(--bg3);border:1.5px solid var(--border);color:var(--text2);padding:9px 18px;border-radius:8px;font-weight:600;font-size:0.82rem;cursor:pointer;transition:all 0.3s;}
-.draft-btn:hover{border-color:var(--accent);color:var(--accent);}
-.cancel-btn{background:transparent;border:1px solid var(--border);color:var(--gray);padding:9px 16px;border-radius:8px;font-size:0.82rem;cursor:pointer;transition:all 0.3s;}
-.cancel-btn:hover{border-color:var(--gray);}
-.preview-btn{background:transparent;border:1.5px solid var(--border);color:var(--text2);padding:9px 16px;border-radius:8px;font-size:0.82rem;cursor:pointer;transition:all 0.3s;}
-.preview-btn:hover{border-color:var(--accent);color:var(--accent);}
-.succ{color:var(--success);font-size:0.76rem;font-family:'IBM Plex Mono',monospace;display:none;}
-.err{color:var(--danger);font-size:0.76rem;display:none;}
-.editor-wrap{border:1.5px solid var(--border);border-radius:10px;overflow:hidden;background:var(--eb);}
-.editor-toolbar{background:var(--tb);border-bottom:1px solid var(--border);padding:8px 12px;display:flex;gap:3px;flex-wrap:wrap;align-items:center;}
-.tb-btn{background:transparent;border:1px solid transparent;border-radius:4px;padding:5px 8px;cursor:pointer;font-size:0.8rem;color:var(--text);transition:all 0.2s;line-height:1;}
-.tb-btn:hover{background:var(--bg3);border-color:var(--border);}
-.tb-sep{width:1px;height:18px;background:var(--border);margin:0 3px;}
-.tb-select{background:var(--tb);border:1px solid var(--border);border-radius:4px;padding:4px 7px;font-size:0.78rem;color:var(--text);cursor:pointer;outline:none;}
-.tb-select option{background:var(--bg);}
-.editor-area{min-height:420px;max-height:650px;padding:20px 22px;outline:none;font-size:0.95rem;line-height:1.85;color:var(--text);font-family:'DM Sans',sans-serif;overflow-y:auto;}
-.editor-area:empty::before{content:attr(data-placeholder);color:var(--gray);pointer-events:none;}
-.editor-area h1{font-size:1.5rem;font-weight:700;margin:16px 0 10px;}
-.editor-area h2{font-size:1.2rem;font-weight:700;margin:13px 0 8px;}
-.editor-area h3{font-size:1rem;font-weight:700;margin:11px 0 6px;}
-.editor-area p{margin-bottom:10px;}
-.editor-area blockquote{border-left:4px solid var(--accent);padding:9px 14px;margin:11px 0;background:var(--bg3);border-radius:0 6px 6px 0;font-style:italic;color:var(--text2);}
-.editor-area ul,.editor-area ol{margin:9px 0 12px 22px;}
-.editor-area li{margin-bottom:4px;line-height:1.7;}
-.editor-area a{color:var(--accent);text-decoration:underline;}
-.editor-area code{font-family:'IBM Plex Mono',monospace;background:var(--bg3);padding:2px 5px;border-radius:4px;font-size:0.83em;color:var(--accent);}
-.editor-area hr{border:none;border-top:1px solid var(--border);margin:16px 0;}
-.editor-footer{background:var(--tb);border-top:1px solid var(--border);padding:7px 12px;display:flex;justify-content:space-between;align-items:center;}
-.editor-footer span{font-family:'IBM Plex Mono',monospace;font-size:0.68rem;color:var(--gray);}
-.preview-modal{display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);overflow-y:auto;padding:30px 16px;}
-.preview-modal.open{display:flex;align-items:flex-start;justify-content:center;}
-.preview-inner{max-width:720px;width:100%;background:var(--card);border-radius:16px;overflow:hidden;margin:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3);}
-.preview-header{background:var(--bg3);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;justify-content:space-between;align-items:center;}
-.preview-header span{font-family:'IBM Plex Mono',monospace;font-size:0.72rem;color:var(--accent);letter-spacing:2px;}
-.preview-close{background:none;border:none;color:var(--gray);cursor:pointer;font-size:1.2rem;transition:color 0.3s;}
-.preview-close:hover{color:var(--danger);}
-.preview-body{padding:36px;}
-.preview-img{width:100%;height:200px;background:var(--bg3);margin-bottom:20px;border-radius:8px;overflow:hidden;}
-.preview-img img{width:100%;height:100%;object-fit:cover;}
-.preview-tag{font-family:'IBM Plex Mono',monospace;font-size:0.66rem;color:var(--accent);letter-spacing:2px;margin-bottom:10px;display:block;}
-.preview-title{font-size:1.5rem;font-weight:700;margin-bottom:8px;line-height:1.3;}
-.preview-meta{font-family:'IBM Plex Mono',monospace;font-size:0.68rem;color:var(--gray);margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border);}
-.preview-content{font-size:0.94rem;color:var(--text2);line-height:1.85;}
-.preview-content h1,.preview-content h2,.preview-content h3{color:var(--text);font-weight:700;margin:16px 0 8px;}
-.preview-content p{margin-bottom:12px;}
-.preview-content blockquote{border-left:4px solid var(--accent);padding:9px 14px;margin:14px 0;background:var(--bg3);border-radius:0 6px 6px 0;font-style:italic;}
-.img-upload{border:2px dashed var(--border);border-radius:8px;padding:15px;text-align:center;cursor:pointer;transition:all 0.3s;position:relative;}
-.img-upload:hover{border-color:var(--accent);}
-.img-upload input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;}
-.img-upload p{font-size:0.78rem;color:var(--gray);margin-top:3px;}
-.img-preview{margin-top:9px;width:100%;max-height:130px;object-fit:cover;border-radius:6px;display:none;}
-.toggle-wrap{display:flex;align-items:center;gap:9px;}
-.toggle{position:relative;display:inline-block;width:42px;height:22px;}
-.toggle input{opacity:0;width:0;height:0;}
-.toggle-slider{position:absolute;cursor:pointer;inset:0;background:var(--border);border-radius:22px;transition:0.3s;}
-.toggle-slider:before{content:'';position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:0.3s;}
-.toggle input:checked+.toggle-slider{background:var(--accent);}
-.toggle input:checked+.toggle-slider:before{transform:translateX(20px);}
-.toggle-label{font-size:0.82rem;color:var(--text2);}
-.list-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
-.list-title{font-family:'IBM Plex Mono',monospace;font-size:0.74rem;color:var(--text);letter-spacing:2px;}
-.list-actions{display:flex;gap:8px;align-items:center;}
-.add-btn{background:var(--bg3);border:1.5px solid var(--border);color:var(--accent);padding:6px 14px;border-radius:6px;font-size:0.74rem;cursor:pointer;font-family:'IBM Plex Mono',monospace;letter-spacing:1px;transition:all 0.3s;}
-.add-btn:hover{background:var(--accent);color:var(--bg);border-color:var(--accent);}
-.bulk-btn{background:transparent;border:1px solid rgba(220,38,38,0.3);color:var(--danger);padding:6px 12px;border-radius:6px;font-size:0.72rem;cursor:pointer;font-family:'IBM Plex Mono',monospace;transition:all 0.3s;display:none;}
-.bulk-btn.show{display:block;}
-.bulk-btn:hover{background:rgba(220,38,38,0.1);}
-.item-list{display:flex;flex-direction:column;gap:9px;}
-.item-row{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;transition:border-color 0.3s;box-shadow:0 1px 4px var(--shadow);}
-.item-row:hover{border-color:rgba(0,102,204,0.3);}
-.item-check{margin-right:10px;width:14px;height:14px;cursor:pointer;accent-color:var(--accent);}
-.item-name{font-size:0.88rem;font-weight:600;margin-bottom:2px;}
-.item-meta{font-size:0.72rem;color:var(--gray);display:flex;gap:9px;align-items:center;flex-wrap:wrap;}
-.ibadge{font-family:'IBM Plex Mono',monospace;font-size:0.6rem;padding:2px 7px;border-radius:10px;background:var(--bg3);color:var(--accent);border:1px solid var(--border);}
-.draft-badge{background:rgba(234,179,8,0.1);color:#ca8a04;border-color:rgba(234,179,8,0.3);}
-.item-actions{display:flex;gap:6px;}
-.edit-btn{background:transparent;border:1px solid var(--border);color:var(--gray);padding:4px 11px;border-radius:5px;font-size:0.72rem;cursor:pointer;transition:all 0.3s;}
-.edit-btn:hover{border-color:var(--accent);color:var(--accent);}
-.del-btn{background:transparent;border:1px solid rgba(220,38,38,0.3);color:var(--danger);padding:4px 11px;border-radius:5px;font-size:0.72rem;cursor:pointer;transition:all 0.3s;}
-.del-btn:hover{background:rgba(220,38,38,0.1);}
-.empty-list{text-align:center;padding:36px;color:var(--gray);font-family:'IBM Plex Mono',monospace;font-size:0.72rem;border:1.5px dashed var(--border);border-radius:8px;}
-.cai{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 16px;box-shadow:0 1px 4px var(--shadow);}
-.cai-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px;gap:9px;}
-.cai-name{font-weight:600;font-size:0.86rem;}
-.cai-meta{font-size:0.7rem;color:var(--gray);font-family:'IBM Plex Mono',monospace;}
-.cai-txt{font-size:0.83rem;color:var(--text2);line-height:1.6;margin-bottom:11px;}
-.cai-act{display:flex;gap:6px;flex-wrap:wrap;}
-.approve-btn{background:rgba(22,163,74,0.1);border:1px solid rgba(22,163,74,0.3);color:var(--success);padding:4px 11px;border-radius:5px;font-size:0.72rem;cursor:pointer;transition:all 0.3s;}
-.approve-btn:hover{background:rgba(22,163,74,0.2);}
-.reject-btn{background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.3);color:var(--danger);padding:4px 11px;border-radius:5px;font-size:0.72rem;cursor:pointer;transition:all 0.3s;}
-.reject-btn:hover{background:rgba(220,38,38,0.15);}
-.sbadge{font-family:'IBM Plex Mono',monospace;font-size:0.6rem;padding:2px 8px;border-radius:10px;}
-.sp{background:rgba(234,179,8,0.1);color:#ca8a04;border:1px solid rgba(234,179,8,0.3);}
-.sa{background:rgba(22,163,74,0.1);color:var(--success);border:1px solid rgba(22,163,74,0.3);}
-.sr{background:rgba(220,38,38,0.08);color:var(--danger);border:1px solid rgba(220,38,38,0.3);}
-.cf-row{display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap;}
-.cf-btn{font-family:'IBM Plex Mono',monospace;font-size:0.66rem;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--gray);cursor:pointer;transition:all 0.3s;}
-.cf-btn.active,.cf-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--bg3);}
-@media(max-width:640px){.form-grid{grid-template-columns:1fr;}.analytics-grid{grid-template-columns:1fr;}}
-</style>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin | mmohamud.me</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <style>
+    :root{--tr:.3s ease;}
+    [data-theme="light"]{--bg:#f8fafc;--bg2:#fff;--bg3:#eef2ff;--card:#fff;--border:rgba(26,37,64,.1);--text:#1a2540;--text2:#3d4f6e;--gray:#64748b;--accent:#0066cc;--shadow:rgba(0,0,0,.06);--danger:#dc2626;--success:#16a34a;--warn:#d97706;--tb:#f1f5f9;--eb:#fff;--ebd:#e2e8f0;}
+    [data-theme="dark"]{--bg:#080e1c;--bg2:#0f172a;--bg3:#1a2540;--card:#0f1a2e;--border:rgba(0,212,255,.1);--text:#eef2ff;--text2:#a0aec0;--gray:#7a8599;--accent:#00d4ff;--shadow:rgba(0,212,255,.06);--danger:#f87171;--success:#4ade80;--warn:#fbbf24;--tb:#1a2540;--eb:#0f1a2e;--ebd:rgba(0,212,255,.15);}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;transition:background var(--tr),color var(--tr);}
+
+    /* LOGIN */
+    #loginScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;}
+    .lbox{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:44px;max-width:380px;width:100%;text-align:center;box-shadow:0 4px 24px var(--shadow);}
+    .llogo{font-family:'IBM Plex Mono',monospace;font-size:1.1rem;color:var(--accent);margin-bottom:6px;letter-spacing:3px;}
+    .lsub{font-size:.82rem;color:var(--gray);margin-bottom:28px;}
+    .lpw{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:12px 15px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;outline:none;margin-bottom:11px;transition:border-color .3s;}
+    .lpw::placeholder{color:var(--gray);}
+    .lpw:focus{border-color:var(--accent);}
+    .lbtn{width:100%;background:var(--accent);color:var(--bg);border:none;padding:12px;border-radius:8px;font-weight:700;font-size:.9rem;cursor:pointer;letter-spacing:1px;transition:all .3s;margin-bottom:11px;}
+    .lbtn:hover{opacity:.85;}
+    .lerr{color:var(--danger);font-size:.78rem;margin-top:4px;display:none;}
+    .ltheme{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:5px 15px;cursor:pointer;font-size:.76rem;color:var(--gray);transition:all .3s;margin-top:12px;}
+    .ltheme:hover{border-color:var(--accent);color:var(--accent);}
+
+    /* DASHBOARD */
+    #dashboard{display:none;}
+    .dh{background:var(--card);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10;transition:background var(--tr);flex-wrap:wrap;gap:8px;}
+    .dlogo{font-family:'IBM Plex Mono',monospace;font-size:.88rem;color:var(--accent);letter-spacing:2px;}
+    .dnav{display:flex;gap:5px;flex-wrap:wrap;}
+    .dtab{font-family:'IBM Plex Mono',monospace;font-size:.68rem;padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--gray);cursor:pointer;transition:all .3s;letter-spacing:1px;position:relative;}
+    .dtab.active,.dtab:hover{border-color:var(--accent);color:var(--accent);background:var(--bg3);}
+    .dtab .badge{position:absolute;top:-6px;right:-6px;background:var(--danger);color:#fff;font-size:.58rem;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+    .dact{display:flex;gap:7px;align-items:center;}
+    .tbtn{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:5px 12px;cursor:pointer;font-size:.74rem;color:var(--gray);display:flex;align-items:center;gap:4px;transition:all .3s;}
+    .tbtn:hover{border-color:var(--accent);color:var(--accent);}
+    .vsite{font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:var(--gray);text-decoration:none;border:1px solid var(--border);padding:5px 12px;border-radius:6px;transition:all .3s;}
+    .vsite:hover{color:var(--accent);border-color:var(--accent);}
+    .lobtn{font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:var(--danger);border:1px solid rgba(220,38,38,.3);padding:5px 12px;border-radius:6px;cursor:pointer;background:transparent;transition:all .3s;}
+    .lobtn:hover{background:rgba(220,38,38,.1);}
+    .dbody{padding:22px;max-width:1100px;margin:0 auto;}
+    .panel{display:none;}.panel.active{display:block;}
+
+    /* SUPABASE STATUS */
+    .sbstat{display:flex;align-items:center;gap:8px;font-family:'IBM Plex Mono',monospace;font-size:.7rem;padding:7px 12px;border-radius:6px;border:1px solid var(--border);margin-bottom:16px;background:var(--card);}
+    .sbdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+    .sbdot.on{background:#22c55e;}.sbdot.off{background:#f0b429;}
+
+    /* STATS */
+    .srow{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px;margin-bottom:20px;}
+    .sbox{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;box-shadow:0 2px 8px var(--shadow);}
+    .snum{font-family:'IBM Plex Mono',monospace;font-size:1.6rem;color:var(--accent);font-weight:700;margin-bottom:3px;}
+    .slbl{font-size:.7rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px;}
+
+    /* FORM CARD */
+    .fcard{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:0 2px 8px var(--shadow);}
+    .ftitle{font-family:'IBM Plex Mono',monospace;font-size:.76rem;color:var(--accent);letter-spacing:2px;margin-bottom:16px;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center;}
+    .asave-lbl{font-size:.68rem;color:var(--gray);font-family:'IBM Plex Mono',monospace;}
+    .asave-lbl.saved{color:var(--success);}
+    .fg2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    .fg2.full{grid-template-columns:1fr;}
+    .fg{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;}
+    .fglabel{font-size:.76rem;color:var(--gray);}
+    .ff{background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.86rem;outline:none;transition:border-color .3s;width:100%;}
+    .ff::placeholder{color:var(--gray);}
+    .ff:focus{border-color:var(--accent);}
+    .ff[type=select],.ff select{background:var(--bg);}
+    .fhint{font-size:.68rem;color:rgba(100,116,139,.7);margin-top:2px;}
+    .factions{display:flex;gap:8px;margin-top:14px;align-items:center;flex-wrap:wrap;}
+    .savebtn{background:var(--accent);color:var(--bg);border:none;padding:9px 22px;border-radius:8px;font-weight:700;font-size:.83rem;cursor:pointer;letter-spacing:1px;transition:all .3s;}
+    .savebtn:hover{opacity:.85;}
+    .draftbtn{background:var(--bg3);border:1.5px solid var(--border);color:var(--text2);padding:9px 16px;border-radius:8px;font-weight:600;font-size:.83rem;cursor:pointer;transition:all .3s;}
+    .draftbtn:hover{border-color:var(--accent);color:var(--accent);}
+    .prevbtn{background:transparent;border:1.5px solid var(--border);color:var(--gray);padding:9px 16px;border-radius:8px;font-size:.83rem;cursor:pointer;transition:all .3s;}
+    .prevbtn:hover{border-color:var(--accent);color:var(--accent);}
+    .cancelbtn{background:transparent;border:1px solid var(--border);color:var(--gray);padding:9px 14px;border-radius:8px;font-size:.83rem;cursor:pointer;transition:all .3s;}
+    .cancelbtn:hover{border-color:var(--gray);}
+    .sucmsg{color:var(--success);font-size:.76rem;font-family:'IBM Plex Mono',monospace;display:none;}
+    .errmsg{color:var(--danger);font-size:.76rem;display:none;}
+    .toggle-wrap{display:flex;align-items:center;gap:9px;}
+    .tgl{position:relative;display:inline-block;width:42px;height:22px;}
+    .tgl input{opacity:0;width:0;height:0;}
+    .tgl-s{position:absolute;cursor:pointer;inset:0;background:var(--border);border-radius:22px;transition:.3s;}
+    .tgl-s:before{content:'';position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s;}
+    .tgl input:checked+.tgl-s{background:var(--accent);}
+    .tgl input:checked+.tgl-s:before{transform:translateX(20px);}
+    .tgl-lbl{font-size:.82rem;color:var(--text2);}
+
+    /* EDITOR */
+    .ewrap{border:1.5px solid var(--ebd);border-radius:10px;overflow:hidden;background:var(--eb);}
+    .etb{background:var(--tb);border-bottom:1px solid var(--ebd);padding:8px 12px;display:flex;gap:3px;flex-wrap:wrap;align-items:center;}
+    .eb{background:transparent;border:1px solid transparent;border-radius:4px;padding:4px 8px;cursor:pointer;font-size:.8rem;color:var(--text);transition:all .2s;font-family:'DM Sans',sans-serif;line-height:1;}
+    .eb:hover{background:var(--bg3);border-color:var(--border);}
+    .esep{width:1px;height:18px;background:var(--border);margin:0 3px;flex-shrink:0;}
+    .esel{background:var(--tb);border:1px solid var(--border);border-radius:4px;padding:3px 7px;font-size:.78rem;color:var(--text);cursor:pointer;outline:none;}
+    .esel option{background:var(--bg);}
+    .earea{min-height:400px;max-height:600px;padding:18px 20px;outline:none;font-size:.95rem;line-height:1.85;color:var(--text);font-family:'DM Sans',sans-serif;overflow-y:auto;}
+    .earea:empty::before{content:attr(data-placeholder);color:var(--gray);pointer-events:none;}
+    .earea h1{font-size:1.5rem;font-weight:700;margin:14px 0 8px;}
+    .earea h2{font-size:1.2rem;font-weight:700;margin:12px 0 7px;}
+    .earea h3{font-size:1rem;font-weight:700;margin:10px 0 5px;}
+    .earea p{margin-bottom:10px;}
+    .earea blockquote{border-left:4px solid var(--accent);padding:9px 15px;margin:10px 0;background:var(--bg3);border-radius:0 6px 6px 0;font-style:italic;color:var(--text2);}
+    .earea ul,.earea ol{margin:9px 0 12px 22px;}
+    .earea li{margin-bottom:4px;}
+    .earea a{color:var(--accent);text-decoration:underline;}
+    .earea code{font-family:'IBM Plex Mono',monospace;background:var(--bg3);padding:1px 5px;border-radius:3px;font-size:.84em;color:var(--accent);}
+    .earea hr{border:none;border-top:1px solid var(--border);margin:14px 0;}
+    .efooter{background:var(--tb);border-top:1px solid var(--ebd);padding:7px 12px;display:flex;justify-content:space-between;align-items:center;font-size:.7rem;color:var(--gray);}
+    .ewc,.ert{font-family:'IBM Plex Mono',monospace;font-size:.7rem;}
+    .ert{color:var(--accent);}
+
+    /* IMAGE UPLOAD */
+    .iup{border:2px dashed var(--border);border-radius:8px;padding:14px;text-align:center;cursor:pointer;transition:all .3s;position:relative;}
+    .iup:hover{border-color:var(--accent);}
+    .iup input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;}
+    .iup p{font-size:.78rem;color:var(--gray);margin-top:3px;}
+    .iup .cnote{font-size:.68rem;color:var(--success);margin-top:2px;}
+    .iprev{margin-top:8px;width:100%;max-height:130px;object-fit:cover;border-radius:6px;display:none;}
+
+    /* LIST */
+    .lh{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+    .lt{font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--text);letter-spacing:2px;}
+    .lact{display:flex;gap:7px;align-items:center;}
+    .addbtn{background:var(--bg3);border:1.5px solid var(--border);color:var(--accent);padding:6px 14px;border-radius:6px;font-size:.72rem;cursor:pointer;font-family:'IBM Plex Mono',monospace;letter-spacing:1px;transition:all .3s;}
+    .addbtn:hover{background:var(--accent);color:var(--bg);border-color:var(--accent);}
+    .bulkbtn{display:none;background:transparent;border:1px solid rgba(220,38,38,.3);color:var(--danger);padding:6px 14px;border-radius:6px;font-size:.72rem;cursor:pointer;font-family:'IBM Plex Mono',monospace;transition:all .3s;}
+    .bulkbtn:hover{background:rgba(220,38,38,.1);}
+    .ilist{display:flex;flex-direction:column;gap:8px;}
+    .irow{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;transition:border-color .3s;box-shadow:0 1px 4px var(--shadow);}
+    .irow:hover{border-color:rgba(0,102,204,.25);}
+    .irow.sel{border-color:var(--accent);background:var(--bg3);}
+    .irow-l{display:flex;align-items:center;gap:10px;}
+    .icheck{width:16px;height:16px;cursor:pointer;accent-color:var(--accent);}
+    .iname{font-size:.88rem;font-weight:600;margin-bottom:2px;}
+    .imeta{font-size:.72rem;color:var(--gray);display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+    .ibadge{font-family:'IBM Plex Mono',monospace;font-size:.6rem;padding:2px 7px;border-radius:10px;background:var(--bg3);color:var(--accent);border:1px solid var(--border);}
+    .dbadge{background:rgba(240,180,41,.1);color:var(--warn);border-color:rgba(240,180,41,.3);}
+    .ibtns{display:flex;gap:6px;flex-shrink:0;}
+    .editbtn{background:transparent;border:1px solid var(--border);color:var(--gray);padding:4px 11px;border-radius:5px;font-size:.72rem;cursor:pointer;transition:all .3s;}
+    .editbtn:hover{border-color:var(--accent);color:var(--accent);}
+    .delbtn{background:transparent;border:1px solid rgba(220,38,38,.3);color:var(--danger);padding:4px 11px;border-radius:5px;font-size:.72rem;cursor:pointer;transition:all .3s;}
+    .delbtn:hover{background:rgba(220,38,38,.1);}
+    .emptylist{text-align:center;padding:32px;color:var(--gray);font-family:'IBM Plex Mono',monospace;font-size:.72rem;border:1.5px dashed var(--border);border-radius:8px;}
+
+    /* PREVIEW */
+    .prevmodal{display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.65);backdrop-filter:blur(8px);overflow-y:auto;padding:28px 18px;}
+    .prevmodal.open{display:flex;align-items:flex-start;justify-content:center;}
+    .previnner{max-width:720px;width:100%;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:34px;position:relative;margin:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+    .prevclose{position:absolute;top:14px;right:14px;background:var(--bg3);border:1px solid var(--border);color:var(--gray);width:30px;height:30px;border-radius:50%;font-size:.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .3s;}
+    .prevclose:hover{color:var(--accent);border-color:var(--accent);}
+    .prev-cat{font-family:'IBM Plex Mono',monospace;font-size:.66rem;color:var(--accent);letter-spacing:2px;margin-bottom:9px;display:block;}
+    .prev-title{font-size:1.6rem;font-weight:700;margin-bottom:8px;line-height:1.3;}
+    .prev-meta{font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:var(--gray);margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid var(--border);}
+    .prev-content{font-size:.93rem;color:var(--text2);line-height:1.85;}
+    .prev-content h1,.prev-content h2,.prev-content h3{color:var(--text);margin:14px 0 8px;}
+    .prev-content p{margin-bottom:12px;}
+    .prev-content blockquote{border-left:4px solid var(--accent);padding:9px 15px;margin:12px 0;background:var(--bg3);border-radius:0 6px 6px 0;font-style:italic;}
+    .prev-content code{font-family:'IBM Plex Mono',monospace;background:var(--bg3);padding:2px 5px;border-radius:3px;font-size:.84em;color:var(--accent);}
+    .prev-content ul,.prev-content ol{margin:8px 0 12px 20px;}
+
+    /* ANALYTICS */
+    .agrid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+    .achart{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;box-shadow:0 2px 8px var(--shadow);}
+    .actitle{font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:var(--accent);letter-spacing:2px;margin-bottom:12px;text-transform:uppercase;}
+    .toplist{display:flex;flex-direction:column;gap:8px;}
+    .topitem{display:flex;justify-content:space-between;align-items:center;gap:10px;}
+    .topname{font-size:.8rem;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;}
+    .topbar-w{display:flex;align-items:center;gap:7px;min-width:90px;}
+    .topbar-bg{flex:1;height:5px;background:var(--bg3);border-radius:10px;overflow:hidden;}
+    .topbar-fill{height:100%;background:var(--accent);border-radius:10px;transition:width .8s ease;}
+    .topviews{font-family:'IBM Plex Mono',monospace;font-size:.64rem;color:var(--gray);}
+
+    /* COMMENTS */
+    .cfilt{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;}
+    .cfbtn{font-family:'IBM Plex Mono',monospace;font-size:.64rem;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--gray);cursor:pointer;transition:all .3s;}
+    .cfbtn.active,.cfbtn:hover{border-color:var(--accent);color:var(--accent);background:var(--bg3);}
+    .cai{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 16px;box-shadow:0 1px 4px var(--shadow);margin-bottom:8px;}
+    .caihdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;gap:8px;}
+    .cainame{font-weight:600;font-size:.86rem;}
+    .caimeta{font-size:.7rem;color:var(--gray);font-family:'IBM Plex Mono',monospace;}
+    .caitxt{font-size:.83rem;color:var(--text2);line-height:1.6;margin-bottom:10px;}
+    .caibtn-row{display:flex;gap:6px;flex-wrap:wrap;}
+    .appbtn{background:rgba(22,163,74,.1);border:1px solid rgba(22,163,74,.3);color:var(--success);padding:4px 10px;border-radius:5px;font-size:.72rem;cursor:pointer;transition:all .3s;}
+    .appbtn:hover{background:rgba(22,163,74,.2);}
+    .rejbtn{background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.3);color:var(--danger);padding:4px 10px;border-radius:5px;font-size:.72rem;cursor:pointer;transition:all .3s;}
+    .rejbtn:hover{background:rgba(220,38,38,.15);}
+    .sbadge{font-family:'IBM Plex Mono',monospace;font-size:.6rem;padding:2px 8px;border-radius:10px;white-space:nowrap;}
+    .sp{background:rgba(234,179,8,.1);color:var(--warn);border:1px solid rgba(234,179,8,.3);}
+    .sa{background:rgba(22,163,74,.1);color:var(--success);border:1px solid rgba(22,163,74,.3);}
+    .sr{background:rgba(220,38,38,.08);color:var(--danger);border:1px solid rgba(220,38,38,.3);}
+
+    @media(max-width:640px){.fg2{grid-template-columns:1fr;}.dh{gap:8px;}.agrid{grid-template-columns:1fr;}}
+  </style>
 </head>
 <body>
+
+<!-- LOGIN -->
 <div id="loginScreen">
-  <div class="login-box">
-    <div class="login-logo">MM // ADMIN</div>
-    <div class="login-sub">mmohamud.me control panel</div>
-    <input type="password" id="pwInput" placeholder="Enter password" onkeydown="if(event.key==='Enter')login()"/>
-    <button class="login-btn" onclick="login()">Access Dashboard</button>
-    <div class="login-err" id="loginErr">Incorrect password.</div>
-    <button class="theme-mini" onclick="toggleTheme()"><span id="loginThemeIcon">🌙</span> Switch theme</button>
+  <div class="lbox">
+    <div class="llogo">MM // ADMIN</div>
+    <div class="lsub">mmohamud.me control panel</div>
+    <input type="password" id="pwIn" class="lpw" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <button class="lbtn" onclick="doLogin()">Access Dashboard</button>
+    <div class="lerr" id="lErr">Incorrect password. Try again.</div>
+    <button class="ltheme" onclick="toggleTheme()"><span id="lTI">🌙</span> Switch theme</button>
   </div>
 </div>
 
-<div class="preview-modal" id="previewModal">
-  <div class="preview-inner">
-    <div class="preview-header"><span>// PREVIEW</span><button class="preview-close" onclick="closePreview()">×</button></div>
-    <div class="preview-body">
-      <div class="preview-img" id="pvImg"></div>
-      <span class="preview-tag" id="pvTag"></span>
-      <div class="preview-title" id="pvTitle"></div>
-      <div class="preview-meta" id="pvMeta"></div>
-      <div class="preview-content" id="pvContent"></div>
-    </div>
-  </div>
-</div>
-
+<!-- DASHBOARD -->
 <div id="dashboard">
-  <div class="dash-header">
-    <div class="dash-logo">MM // ADMIN</div>
-    <div class="dash-nav">
-      <button class="dash-tab active" onclick="switchPanel('analytics',this)">Analytics</button>
-      <button class="dash-tab" onclick="switchPanel('projects',this)">Projects</button>
-      <button class="dash-tab" onclick="switchPanel('blogs',this)">Blog Posts</button>
-      <button class="dash-tab" id="commentsTab" onclick="switchPanel('comments',this)">Comments</button>
+  <div class="dh">
+    <div class="dlogo">MM // ADMIN</div>
+    <div class="dnav">
+      <button class="dtab active" onclick="switchPanel('projects',this)">Projects</button>
+      <button class="dtab" onclick="switchPanel('blogs',this)">Blog Posts</button>
+      <button class="dtab" id="ctab" onclick="switchPanel('comments',this)">Comments</button>
+      <button class="dtab" onclick="switchPanel('analytics',this)">Analytics</button>
     </div>
-    <div class="dash-actions">
-      <button class="theme-btn" onclick="toggleTheme()"><span id="themeIcon">🌙</span><span id="themeLabel">Dark</span></button>
-      <a href="index.html" target="_blank" class="view-site">View Site</a>
-      <button class="logout-btn" onclick="logout()">Logout</button>
+    <div class="dact">
+      <button class="tbtn" onclick="toggleTheme()"><span id="tI">🌙</span><span id="tL">Dark</span></button>
+      <a href="index.html" target="_blank" rel="noopener" class="vsite">View Site</a>
+      <button class="lobtn" onclick="doLogout()">Logout</button>
     </div>
   </div>
-  <div class="dash-body">
-    <div class="sb-status" id="sbStatus"><div class="sb-dot local" id="sbDot"></div><span id="sbText">Using localStorage</span></div>
-    <div class="stats-row" id="statsRow"></div>
 
-    <div class="panel active" id="analyticsPanel">
-      <div class="analytics-grid" id="analyticsGrid"></div>
+  <div class="dbody">
+    <div class="sbstat" id="sbStat">
+      <div class="sbdot off" id="sbDot"></div>
+      <span id="sbTxt">Checking connection...</span>
     </div>
+    <div class="srow" id="sRow"></div>
 
-    <div class="panel" id="projectsPanel">
-      <div class="form-card" id="projectForm" style="display:none">
-        <div class="form-title"><span id="pFormTitle">// Add New Project</span><span class="autosave-ind" id="pAS">✓ Autosaved</span></div>
-        <div class="form-grid">
-          <div class="fg"><label>Title *</label><input type="text" id="ptitle" placeholder="Project title" oninput="sched('p')"/></div>
-          <div class="fg"><label>Category *</label><select id="pcat"><option value="cybersecurity">Cybersecurity</option><option value="data">Data Analytics</option><option value="web">Web Dev</option><option value="education">Education</option></select></div>
+    <!-- PROJECTS PANEL -->
+    <div class="panel active" id="projectsPanel">
+      <div class="fcard" id="pForm" style="display:none">
+        <div class="ftitle"><span id="pFTitle">// Add New Project</span></div>
+        <div class="fg2">
+          <div class="fg"><label class="fglabel">Project Title *</label><input type="text" id="pT" class="ff" placeholder="e.g. Security+ Exam Prep App"/></div>
+          <div class="fg"><label class="fglabel">Category *</label><select id="pC" class="ff"><option value="cybersecurity">Cybersecurity</option><option value="data">Data Analytics</option><option value="web">Web Dev</option><option value="education">Education</option></select></div>
         </div>
-        <div class="form-grid full" style="margin-top:12px">
-          <div class="fg"><label>Short Description *</label><textarea id="pdesc" placeholder="Clear summary..." oninput="sched('p')"></textarea></div>
-          <div class="fg"><label>Your Role</label><textarea id="prole" placeholder="What you did..." oninput="sched('p')"></textarea></div>
-          <div class="fg"><label>The Problem</label><textarea id="pproblem" placeholder="What were you solving?" oninput="sched('p')"></textarea></div>
-          <div class="fg"><label>The Process</label><textarea id="pprocess" placeholder="How you solved it..." oninput="sched('p')"></textarea></div>
-          <div class="fg"><label>Impact and Results</label><textarea id="pimpact" placeholder="Metrics and outcomes..." oninput="sched('p')"></textarea></div>
+        <div class="fg"><label class="fglabel">Short Description *</label><textarea id="pD" class="ff" style="min-height:75px;resize:vertical;" placeholder="Clear concise summary..."></textarea></div>
+        <div class="fg2">
+          <div class="fg"><label class="fglabel">Your Role</label><textarea id="pR" class="ff" style="min-height:70px;resize:vertical;" placeholder="What you specifically did..."></textarea></div>
+          <div class="fg"><label class="fglabel">The Problem</label><textarea id="pPr" class="ff" style="min-height:70px;resize:vertical;" placeholder="What issue were you solving?"></textarea></div>
+          <div class="fg"><label class="fglabel">The Process</label><textarea id="pPs" class="ff" style="min-height:70px;resize:vertical;" placeholder="How you built the solution..."></textarea></div>
+          <div class="fg"><label class="fglabel">Impact and Results</label><textarea id="pI" class="ff" style="min-height:70px;resize:vertical;" placeholder="Metrics and outcomes..."></textarea></div>
         </div>
-        <div class="form-grid" style="margin-top:12px">
-          <div class="fg"><label>Skills (comma separated)</label><input type="text" id="pskills" placeholder="Python, React, SQL"/></div>
-          <div class="fg"><label>Tags (comma separated)</label><input type="text" id="ptags" placeholder="Security+, Career"/></div>
-          <div class="fg"><label>Live Demo URL</label><input type="url" id="plive" placeholder="https://"/></div>
-          <div class="fg"><label>GitHub URL</label><input type="url" id="pgithub" placeholder="https://github.com/"/></div>
-          <div class="fg"><label>YouTube Video ID</label><input type="text" id="pyt" placeholder="e.g. dQw4w9WgXcQ"/><span class="hint">Part after youtube.com/watch?v=</span></div>
-          <div class="fg"><label>Image URL</label><input type="url" id="pimgurl" placeholder="https://..."/></div>
+        <div class="fg2" style="margin-top:2px">
+          <div class="fg"><label class="fglabel">Skills (comma separated)</label><input type="text" id="pSk" class="ff" placeholder="Python, React, SQL"/></div>
+          <div class="fg"><label class="fglabel">Tags (comma separated)</label><input type="text" id="pTg" class="ff" placeholder="security, python"/></div>
+          <div class="fg"><label class="fglabel">Live Demo URL</label><input type="url" id="pL" class="ff" placeholder="https://"/></div>
+          <div class="fg"><label class="fglabel">GitHub URL</label><input type="url" id="pG" class="ff" placeholder="https://github.com/"/></div>
+          <div class="fg"><label class="fglabel">YouTube Video ID</label><input type="text" id="pY" class="ff" placeholder="e.g. dQw4w9WgXcQ"/><span class="fhint">Part after youtube.com/watch?v=</span></div>
+          <div class="fg"><label class="fglabel">Image URL</label><input type="url" id="pIU" class="ff" placeholder="https://..."/></div>
         </div>
-        <div class="fg" style="margin-top:12px">
-          <label>Or Upload Image (auto-compressed)</label>
-          <div class="img-upload"><input type="file" accept="image/*" onchange="handleImg(this,'pimgData','pimgPreview','pimgurl')"/><div>📁</div><p>Click to upload</p></div>
-          <img id="pimgPreview" class="img-preview"/><input type="hidden" id="pimgData"/>
+        <div class="fg" style="margin-top:4px">
+          <label class="fglabel">Or Upload Image (auto-compressed to &lt;500KB)</label>
+          <div class="iup"><input type="file" accept="image/*" onchange="handleImg(this,'pID','pIPrev','pIU')"/><div>📁</div><p>Click to upload</p><p class="cnote">Auto-compressed for fast loading</p></div>
+          <img id="pIPrev" class="iprev"/><input type="hidden" id="pID"/>
         </div>
-        <div class="fg" style="margin-top:12px">
-          <div class="toggle-wrap"><label class="toggle"><input type="checkbox" id="pfeatured"/><span class="toggle-slider"></span></label><span class="toggle-label">Mark as Featured</span></div>
+        <div class="fg" style="margin-top:6px">
+          <div class="toggle-wrap">
+            <label class="tgl"><input type="checkbox" id="pFeat"/><span class="tgl-s"></span></label>
+            <span class="tgl-lbl">Mark as Featured (shows gold badge, sorted to top)</span>
+          </div>
         </div>
-        <div class="form-actions">
-          <button class="save-btn" onclick="saveProject()">Publish</button>
-          <button class="cancel-btn" onclick="cancelForm('projectForm')">Cancel</button>
-          <span class="succ" id="pSucc">Saved!</span><span class="err" id="pErr"></span>
+        <div class="factions">
+          <button class="savebtn" onclick="saveProject()">Publish Project</button>
+          <button class="cancelbtn" onclick="cancelForm('pForm')">Cancel</button>
+          <span class="sucmsg" id="pSuc">Saved!</span>
+          <span class="errmsg" id="pErr"></span>
         </div>
       </div>
-      <div class="list-header">
-        <div class="list-title">// Projects</div>
-        <div class="list-actions">
-          <button class="bulk-btn" id="pBulk" onclick="bulkDel('projects')">Delete Selected</button>
-          <button class="add-btn" onclick="showProjectForm()">+ Add Project</button>
+      <div class="lh">
+        <div class="lt">// Projects</div>
+        <div class="lact">
+          <button class="bulkbtn" id="pBulk" onclick="bulkDel('projects')">Delete Selected</button>
+          <button class="addbtn" onclick="showProjectForm()">+ Add Project</button>
         </div>
       </div>
-      <div class="item-list" id="projectList"></div>
+      <div class="ilist" id="pList"></div>
     </div>
 
+    <!-- BLOGS PANEL -->
     <div class="panel" id="blogsPanel">
-      <div class="form-card" id="blogForm" style="display:none">
-        <div class="form-title"><span id="bFormTitle">// Write New Post</span><span class="autosave-ind" id="bAS">✓ Autosaved</span></div>
-        <div class="form-grid">
-          <div class="fg"><label>Post Title *</label><input type="text" id="btitle" placeholder="Post title" oninput="sched('b')"/></div>
-          <div class="fg"><label>Category *</label><select id="bcat"><option>Cybersecurity</option><option>Career</option><option>Education</option><option>Technology</option><option>Community</option></select></div>
-          <div class="fg"><label>Tags (comma separated)</label><input type="text" id="btags" placeholder="Security+, AI, Career Tips" oninput="sched('b')"/></div>
-          <div class="fg"><label>Publish Date</label><input type="text" id="bdate" placeholder="e.g. April 2026"/></div>
-          <div class="fg"><label>Cover Image URL</label><input type="url" id="bimgurl" placeholder="https://..."/></div>
+      <div class="fcard" id="bForm" style="display:none">
+        <div class="ftitle">
+          <span id="bFTitle">// Write New Post</span>
+          <span class="asave-lbl" id="asLbl">Autosave ready</span>
         </div>
-        <div class="fg" style="margin-top:12px">
-          <label>Short Excerpt *</label>
-          <textarea style="background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.86rem;outline:none;transition:border-color 0.3s;width:100%;min-height:70px;resize:vertical;margin-top:4px;" id="bexc" placeholder="2-3 sentence summary shown on blog card..." oninput="sched('b')"></textarea>
+        <div class="fg2">
+          <div class="fg"><label class="fglabel">Post Title *</label><input type="text" id="bT" class="ff" placeholder="Post title..." oninput="schedAS()"/></div>
+          <div class="fg"><label class="fglabel">Category *</label><select id="bC" class="ff" onchange="schedAS()"><option>Cybersecurity</option><option>Career</option><option>Education</option><option>Technology</option><option>Community</option></select></div>
+          <div class="fg"><label class="fglabel">Publish Date</label><input type="text" id="bDt" class="ff" placeholder="e.g. April 2026"/></div>
+          <div class="fg"><label class="fglabel">Cover Image URL</label><input type="url" id="bIU" class="ff" placeholder="https://..." oninput="schedAS()"/></div>
+          <div class="fg" style="grid-column:1/-1"><label class="fglabel">Tags (comma separated)</label><input type="text" id="bTg" class="ff" placeholder="Security+, AI, Career Tips" oninput="schedAS()"/><span class="fhint">Shown as clickable pills on blog cards</span></div>
         </div>
-        <div class="fg" style="margin-top:12px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;">
-            <label>Full Post Content *</label>
+        <div class="fg"><label class="fglabel">Short Excerpt (shown on card) *</label><textarea id="bEx" class="ff" style="min-height:72px;resize:vertical;" placeholder="2-3 sentence summary shown on the blog card..." oninput="schedAS()"></textarea></div>
+        <div class="fg" style="margin-top:4px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <label class="fglabel">Full Post Content *</label>
             <div style="display:flex;gap:10px;">
-              <span id="edWC" style="font-family:'IBM Plex Mono',monospace;font-size:0.68rem;color:var(--gray);">0 words</span>
-              <span id="edRT" style="font-family:'IBM Plex Mono',monospace;font-size:0.68rem;color:var(--accent);">0 min read</span>
+              <span class="ewc" id="eWC">0 words</span>
+              <span class="ert" id="eRT">0 min read</span>
             </div>
           </div>
-          <div class="editor-wrap">
-            <div class="editor-toolbar">
-              <select class="tb-select" onchange="ec('formatBlock',this.value);this.value=''">
-                <option value="">Paragraph</option><option value="h1">Heading 1</option><option value="h2">Heading 2</option><option value="h3">Heading 3</option><option value="blockquote">Blockquote</option>
+          <div class="ewrap">
+            <div class="etb">
+              <select class="esel" onchange="eCmd('formatBlock',this.value);this.value=''">
+                <option value="">Paragraph</option>
+                <option value="h1">Heading 1</option>
+                <option value="h2">Heading 2</option>
+                <option value="h3">Heading 3</option>
+                <option value="blockquote">Blockquote</option>
+                <option value="pre">Code Block</option>
               </select>
-              <div class="tb-sep"></div>
-              <button class="tb-btn" onclick="ec('bold')" title="Bold"><b>B</b></button>
-              <button class="tb-btn" onclick="ec('italic')" title="Italic"><i>I</i></button>
-              <button class="tb-btn" onclick="ec('underline')" title="Underline"><u>U</u></button>
-              <button class="tb-btn" onclick="ec('strikeThrough')" title="Strike"><s>S</s></button>
-              <div class="tb-sep"></div>
-              <button class="tb-btn" onclick="ec('insertUnorderedList')">• List</button>
-              <button class="tb-btn" onclick="ec('insertOrderedList')">1. List</button>
-              <div class="tb-sep"></div>
-              <button class="tb-btn" onclick="ec('justifyLeft')">⬅</button>
-              <button class="tb-btn" onclick="ec('justifyCenter')">↔</button>
-              <button class="tb-btn" onclick="ec('justifyRight')">➡</button>
-              <div class="tb-sep"></div>
-              <button class="tb-btn" onclick="insertLink()">🔗</button>
-              <button class="tb-btn" onclick="insertImg()">🖼</button>
-              <button class="tb-btn" onclick="ec('insertHorizontalRule')">—</button>
-              <div class="tb-sep"></div>
-              <button class="tb-btn" onclick="ec('undo')">↩</button>
-              <button class="tb-btn" onclick="ec('redo')">↪</button>
+              <div class="esep"></div>
+              <button class="eb" onclick="eCmd('bold')" title="Bold"><b>B</b></button>
+              <button class="eb" onclick="eCmd('italic')" title="Italic"><i>I</i></button>
+              <button class="eb" onclick="eCmd('underline')" title="Underline"><u>U</u></button>
+              <button class="eb" onclick="eCmd('strikeThrough')" title="Strikethrough"><s>S</s></button>
+              <div class="esep"></div>
+              <button class="eb" onclick="eCmd('insertUnorderedList')" title="Bullet List">• List</button>
+              <button class="eb" onclick="eCmd('insertOrderedList')" title="Numbered List">1. List</button>
+              <div class="esep"></div>
+              <button class="eb" onclick="eCmd('justifyLeft')" title="Left">⬅</button>
+              <button class="eb" onclick="eCmd('justifyCenter')" title="Center">↔</button>
+              <button class="eb" onclick="eCmd('justifyRight')" title="Right">➡</button>
+              <div class="esep"></div>
+              <button class="eb" onclick="eInsLink()" title="Link">🔗 Link</button>
+              <button class="eb" onclick="eInsImg()" title="Image">🖼 Image</button>
+              <button class="eb" onclick="eCmd('insertHorizontalRule')" title="Divider">— Rule</button>
+              <div class="esep"></div>
+              <button class="eb" onclick="eCmd('undo')" title="Undo">↩</button>
+              <button class="eb" onclick="eCmd('redo')" title="Redo">↪</button>
             </div>
-            <div class="editor-area" id="blogEditor" contenteditable="true" data-placeholder="Start writing... Use Heading 2 for main sections to auto-generate Table of Contents." oninput="updateWC();sched('b')"></div>
-            <div class="editor-footer"><span>Tip: Heading 2 for main sections, Heading 3 for sub-sections</span></div>
+            <div class="earea" id="bEditor" contenteditable="true"
+              data-placeholder="Start writing your blog post here... Use Heading 2 for main sections so a Table of Contents auto-generates on the site."
+              oninput="onEditorInput()"></div>
+            <div class="efooter">
+              <span>Tip: Heading 2 = main sections · Heading 3 = sub-sections · TOC auto-generates for 2+ headings</span>
+            </div>
           </div>
         </div>
-        <div class="fg" style="margin-top:12px">
-          <label>Or Upload Cover Image (auto-compressed)</label>
-          <div class="img-upload"><input type="file" accept="image/*" onchange="handleImg(this,'bimgData','bimgPreview','bimgurl')"/><div>📁</div><p>Click to upload</p></div>
-          <img id="bimgPreview" class="img-preview"/><input type="hidden" id="bimgData"/>
+        <div class="fg" style="margin-top:6px">
+          <label class="fglabel">Or Upload Cover Image (auto-compressed)</label>
+          <div class="iup"><input type="file" accept="image/*" onchange="handleImg(this,'bID','bIPrev','bIU')"/><div>📁</div><p>Click to upload cover image</p><p class="cnote">Auto-compressed for fast loading</p></div>
+          <img id="bIPrev" class="iprev"/><input type="hidden" id="bID"/>
         </div>
-        <div class="form-actions">
-          <button class="save-btn" onclick="saveBlog(false)">Publish Post</button>
-          <button class="draft-btn" onclick="saveBlog(true)">Save as Draft</button>
-          <button class="preview-btn" onclick="openPreview()">👁 Preview</button>
-          <button class="cancel-btn" onclick="cancelForm('blogForm')">Cancel</button>
-          <span class="succ" id="bSucc">Saved!</span><span class="err" id="bErr"></span>
-        </div>
-      </div>
-      <div class="list-header">
-        <div class="list-title">// Blog Posts</div>
-        <div class="list-actions">
-          <button class="bulk-btn" id="bBulk" onclick="bulkDel('blogs')">Delete Selected</button>
-          <button class="add-btn" onclick="showBlogForm()">+ Write Post</button>
+        <div class="factions">
+          <button class="savebtn" onclick="saveBlog(false)">Publish Post</button>
+          <button class="draftbtn" onclick="saveBlog(true)">Save as Draft</button>
+          <button class="prevbtn" onclick="previewBlog()">👁 Preview</button>
+          <button class="cancelbtn" onclick="cancelForm('bForm')">Cancel</button>
+          <span class="sucmsg" id="bSuc">Saved!</span>
+          <span class="errmsg" id="bErr"></span>
         </div>
       </div>
-      <div class="item-list" id="blogList"></div>
+      <div class="lh">
+        <div class="lt">// Blog Posts</div>
+        <div class="lact">
+          <button class="bulkbtn" id="bBulk" onclick="bulkDel('blogs')">Delete Selected</button>
+          <button class="addbtn" onclick="showBlogForm()">+ Write Post</button>
+        </div>
+      </div>
+      <div class="ilist" id="bList"></div>
     </div>
 
+    <!-- COMMENTS PANEL -->
     <div class="panel" id="commentsPanel">
-      <div class="list-header"><div class="list-title">// Comments</div><div class="list-actions"><button class="bulk-btn show" onclick="bulkDelComments()">Delete Selected</button></div></div>
-      <div class="cf-row">
-        <button class="cf-btn active" onclick="filterC('all',this)">All</button>
-        <button class="cf-btn" onclick="filterC('pending',this)">Pending</button>
-        <button class="cf-btn" onclick="filterC('approved',this)">Approved</button>
-        <button class="cf-btn" onclick="filterC('rejected',this)">Rejected</button>
+      <div class="lh"><div class="lt">// Comments</div></div>
+      <div class="cfilt">
+        <button class="cfbtn active" onclick="filterC('all',this)">All</button>
+        <button class="cfbtn" onclick="filterC('pending',this)">Pending</button>
+        <button class="cfbtn" onclick="filterC('approved',this)">Approved</button>
+        <button class="cfbtn" onclick="filterC('rejected',this)">Rejected</button>
       </div>
-      <div class="item-list" id="commentList"></div>
+      <div id="cList"></div>
     </div>
+
+    <!-- ANALYTICS PANEL -->
+    <div class="panel" id="analyticsPanel">
+      <div class="lh"><div class="lt">// Analytics</div></div>
+      <div class="agrid">
+        <div class="achart"><div class="actitle">Top Projects by Views</div><div class="toplist" id="aTProj"></div></div>
+        <div class="achart"><div class="actitle">Top Blog Posts by Views</div><div class="toplist" id="aTBlog"></div></div>
+        <div class="achart"><div class="actitle">Projects by Category</div><canvas id="catChart" height="180"></canvas></div>
+        <div class="achart"><div class="actitle">Content Overview</div><canvas id="ovChart" height="180"></canvas></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PREVIEW MODAL -->
+<div class="prevmodal" id="prevModal" onclick="if(event.target===this)closePreview()">
+  <div class="previnner">
+    <button class="prevclose" onclick="closePreview()">×</button>
+    <span class="prev-cat" id="prevCat"></span>
+    <div class="prev-title" id="prevTitle"></div>
+    <div class="prev-meta" id="prevMeta"></div>
+    <div class="prev-content" id="prevContent"></div>
   </div>
 </div>
 
 <script>
 // ============================================================
-// PASTE YOUR SUPABASE CREDENTIALS HERE (same as index.html)
-// Find them at: supabase.com → your project → Settings → API
+// SUPABASE
 // ============================================================
 const SUPABASE_URL='https://dmnrtvkauymnzytqkmvc.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtbnJ0dmthdXltbnp5dHFrbXZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4MDg0OTksImV4cCI6MjA5MDM4NDQ5OX0.mEFYJYjvsr2pEgCm5pSMZ2xCYVO8XRS8oiRCkNu-fUM';
-const USE_SUPABASE=!!(SUPABASE_URL&&SUPABASE_KEY);
+const USE_SB=!!(SUPABASE_URL&&SUPABASE_KEY);
 let sb=null;
-if(USE_SUPABASE){
-  try{sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);}
-  catch(e){console.error('Supabase init failed:',e);}
-}
+if(USE_SB){try{sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);}catch(e){console.error('Supabase init:',e);}}
+
 const PASS='kulan2026';
 let ePIdx=-1,eBIdx=-1,allC=[],cFilter='all';
-let pAST=null,bAST=null;
-let selP=new Set(),selB=new Set(),selC=new Set();
+let asTimer=null;
+let catChartI=null,ovChartI=null;
 
+// ============================================================
+// THEME
+// ============================================================
 function getAT(){const h=new Date().getHours();return(h>=18||h<6)?'dark':'light';}
-function applyTheme(t){document.documentElement.setAttribute('data-theme',t);const icon=t==='dark'?'☀️':'🌙';['themeIcon','loginThemeIcon'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=icon;});const tl=document.getElementById('themeLabel');if(tl)tl.textContent=t==='dark'?'Light':'Dark';localStorage.setItem('mm_admin_theme',t);}
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme',t);
+  const ic=t==='dark'?'☀️':'🌙',lbl=t==='dark'?'Light':'Dark';
+  ['tI','lTI'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=ic;});
+  const tl=document.getElementById('tL');if(tl)tl.textContent=lbl;
+  localStorage.setItem('mm_at',t);
+}
 function toggleTheme(){applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');}
-function initTheme(){applyTheme(localStorage.getItem('mm_admin_theme')||getAT());}
-initTheme();
+applyTheme(localStorage.getItem('mm_at')||getAT());
 
-function login(){if(document.getElementById('pwInput').value===PASS){document.getElementById('loginScreen').style.display='none';document.getElementById('dashboard').style.display='block';checkSB();renderAll();}else{document.getElementById('loginErr').style.display='block';}}
-function logout(){document.getElementById('dashboard').style.display='none';document.getElementById('loginScreen').style.display='flex';document.getElementById('pwInput').value='';}
+// ============================================================
+// AUTH
+// ============================================================
+function doLogin(){
+  if(document.getElementById('pwIn').value===PASS){
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('dashboard').style.display='block';
+    checkSB();renderAll();
+  } else {
+    document.getElementById('lErr').style.display='block';
+    document.getElementById('pwIn').value='';
+    document.getElementById('pwIn').focus();
+  }
+}
+function doLogout(){
+  document.getElementById('dashboard').style.display='none';
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('pwIn').value='';
+}
 
-async function checkSB(){const dot=document.getElementById('sbDot'),text=document.getElementById('sbText');if(USE_SUPABASE){try{await sb.from('projects').select('count',{count:'exact',head:true});dot.className='sb-dot connected';text.textContent='Connected to Supabase';}catch{dot.className='sb-dot local';text.textContent='Supabase error';}}}
+// ============================================================
+// SUPABASE CHECK
+// ============================================================
+async function checkSB(){
+  const dot=document.getElementById('sbDot'),txt=document.getElementById('sbTxt');
+  if(!USE_SB){dot.className='sbdot off';txt.textContent='Supabase not configured (using localStorage)';return;}
+  try{
+    const{error}=await sb.from('projects').select('count',{count:'exact',head:true});
+    if(error)throw error;
+    dot.className='sbdot on';txt.textContent='Connected to Supabase';
+  }catch(e){dot.className='sbdot off';txt.textContent='Supabase error: '+e.message;}
+}
 
+// ============================================================
+// DATA HELPERS
+// ============================================================
 function getP(){try{return JSON.parse(localStorage.getItem('mm_projects')||'[]');}catch{return[];}}
 function getB(){try{return JSON.parse(localStorage.getItem('mm_blogs')||'[]');}catch{return[];}}
 function saveP(d){localStorage.setItem('mm_projects',JSON.stringify(d));}
 function saveB(d){localStorage.setItem('mm_blogs',JSON.stringify(d));}
 
-async function fetchProjects(){if(USE_SUPABASE){const{data}=await sb.from('projects').select('*').order('created_at',{ascending:false});return data||[];}return getP();}
-async function fetchBlogs(){if(USE_SUPABASE){const{data}=await sb.from('blogs').select('*').order('created_at',{ascending:false});return data||[];}return getB();}
-async function fetchComments(){if(USE_SUPABASE){const{data}=await sb.from('comments').select('*').order('created_at',{ascending:false});return data||[];}return[];}
-
-function switchPanel(p,btn){document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.dash-tab').forEach(t=>t.classList.remove('active'));document.getElementById(p+'Panel').classList.add('active');btn.classList.add('active');if(p==='comments')renderCommentList();if(p==='analytics')renderAnalytics();}
-function cancelForm(id){document.getElementById(id).style.display='none';ePIdx=-1;eBIdx=-1;}
-
-function sched(type){
-  if(type==='p'){clearTimeout(pAST);pAST=setTimeout(()=>{const d={ptitle:document.getElementById('ptitle').value,pdesc:document.getElementById('pdesc').value,prole:document.getElementById('prole').value,pproblem:document.getElementById('pproblem').value,pprocess:document.getElementById('pprocess').value,pimpact:document.getElementById('pimpact').value,pskills:document.getElementById('pskills').value};localStorage.setItem('mm_draft_project',JSON.stringify(d));const i=document.getElementById('pAS');i.style.display='inline';setTimeout(()=>i.style.display='none',2000);},3000);}
-  else{clearTimeout(bAST);bAST=setTimeout(()=>{const d={btitle:document.getElementById('btitle').value,bexc:document.getElementById('bexc').value,bcontent:document.getElementById('blogEditor').innerHTML,btags:document.getElementById('btags').value};localStorage.setItem('mm_draft_blog',JSON.stringify(d));const i=document.getElementById('bAS');i.style.display='inline';setTimeout(()=>i.style.display='none',2000);},3000);}
+async function fetchAllP(){
+  if(USE_SB){try{const{data,error}=await sb.from('projects').select('*').order('created_at',{ascending:false});if(error)throw error;if(data)saveP(data);return data||[];}catch(e){console.error('fetchAllP:',e);}}
+  return getP();
+}
+async function fetchAllB(){
+  if(USE_SB){try{const{data,error}=await sb.from('blogs').select('*').order('created_at',{ascending:false});if(error)throw error;if(data)saveB(data);return data||[];}catch(e){console.error('fetchAllB:',e);}}
+  return getB();
+}
+async function fetchAllC(){
+  if(USE_SB){try{const{data,error}=await sb.from('comments').select('*').order('created_at',{ascending:false});if(error)throw error;return data||[];}catch(e){console.error('fetchAllC:',e);}}
+  return[];
 }
 
-async function compressImg(file){return new Promise(r=>{const reader=new FileReader();reader.onload=e=>{const img=new Image();img.onload=()=>{const c=document.createElement('canvas');let w=img.width,h=img.height;if(w>1200){h=Math.round(h*1200/w);w=1200;}c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);r(c.toDataURL('image/jpeg',0.8));};img.src=e.target.result;};reader.readAsDataURL(file);});}
-
-async function handleImg(input,dId,pId,uId){const file=input.files[0];if(!file)return;const comp=await compressImg(file);document.getElementById(dId).value=comp;const prev=document.getElementById(pId);prev.src=comp;prev.style.display='block';document.getElementById(uId).value='';}
-
-function ec(cmd,val=null){document.getElementById('blogEditor').focus();document.execCommand(cmd,false,val);updateWC();}
-function insertLink(){const url=prompt('Enter URL:');if(url)ec('createLink',url);}
-function insertImg(){const url=prompt('Enter image URL:');if(url)ec('insertImage',url);}
-function updateWC(){const t=document.getElementById('blogEditor').innerText||'';const w=t.split(/\s+/).filter(Boolean).length;const rt=Math.max(1,Math.ceil(w/200));document.getElementById('edWC').textContent=w+' words';document.getElementById('edRT').textContent=rt+' min read';}
-
-function openPreview(){
-  const title=document.getElementById('btitle').value||'Untitled';
-  const cat=document.getElementById('bcat').value;
-  const content=document.getElementById('blogEditor').innerHTML;
-  const imgUrl=document.getElementById('bimgurl').value||document.getElementById('bimgData').value;
-  const wc=(document.getElementById('blogEditor').innerText||'').split(/\s+/).filter(Boolean).length;
-  const rt=Math.max(1,Math.ceil(wc/200));
-  const pvImg=document.getElementById('pvImg');
-  pvImg.innerHTML=imgUrl?`<img src="${imgUrl}" style="width:100%;height:100%;object-fit:cover;"/>` : '';
-  document.getElementById('pvTag').textContent=cat;
-  document.getElementById('pvTitle').textContent=title;
-  document.getElementById('pvMeta').textContent=(document.getElementById('bdate').value||'Draft')+' · '+rt+' min read';
-  document.getElementById('pvContent').innerHTML=content;
-  document.getElementById('previewModal').classList.add('open');
+// ============================================================
+// PANELS
+// ============================================================
+function switchPanel(p,btn){
+  document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.dtab').forEach(x=>x.classList.remove('active'));
+  document.getElementById(p+'Panel').classList.add('active');
+  btn.classList.add('active');
+  if(p==='comments')renderCommentList();
+  if(p==='analytics')renderAnalytics();
 }
-function closePreview(){document.getElementById('previewModal').classList.remove('open');}
+function cancelForm(id){document.getElementById(id).style.display='none';ePIdx=-1;eBIdx=-1;clearTimeout(asTimer);}
 
+// ============================================================
+// IMAGE COMPRESSION
+// ============================================================
+function handleImg(input,dataId,prevId,urlId){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const img=new Image();
+    img.onload=()=>{
+      let q=0.82;let w=img.width;let h=img.height;
+      const mw=1200;if(w>mw){h=Math.round(h*mw/w);w=mw;}
+      const cv=document.createElement('canvas');cv.width=w;cv.height=h;
+      const ctx=cv.getContext('2d');ctx.drawImage(img,0,0,w,h);
+      let result=cv.toDataURL('image/jpeg',q);
+      while(result.length>500*1024*1.37&&q>0.2){q-=0.1;result=cv.toDataURL('image/jpeg',q);}
+      document.getElementById(dataId).value=result;
+      const prev=document.getElementById(prevId);prev.src=result;prev.style.display='block';
+      document.getElementById(urlId).value='';
+    };
+    img.src=e.target.result;
+  };reader.readAsDataURL(file);
+}
+
+// ============================================================
+// RICH TEXT EDITOR
+// ============================================================
+function eCmd(cmd,val=null){document.getElementById('bEditor').focus();document.execCommand(cmd,false,val);onEditorInput();}
+function eInsLink(){const url=prompt('Enter URL:');if(url)eCmd('createLink',url);}
+function eInsImg(){const url=prompt('Enter image URL:');if(url)eCmd('insertImage',url);}
+function onEditorInput(){
+  const el=document.getElementById('bEditor');
+  const words=(el.innerText||'').split(/\s+/).filter(Boolean).length;
+  document.getElementById('eWC').textContent=words+' words';
+  document.getElementById('eRT').textContent=Math.max(1,Math.ceil(words/200))+' min read';
+  schedAS();
+}
+
+// ============================================================
+// AUTOSAVE
+// ============================================================
+function schedAS(){
+  clearTimeout(asTimer);
+  const lbl=document.getElementById('asLbl');
+  lbl.textContent='Saving draft...';lbl.className='asave-lbl';
+  asTimer=setTimeout(()=>{
+    try{
+      const draft={
+        bT:document.getElementById('bT')?.value||'',
+        bC:document.getElementById('bC')?.value||'',
+        bEx:document.getElementById('bEx')?.value||'',
+        bTg:document.getElementById('bTg')?.value||'',
+        bDt:document.getElementById('bDt')?.value||'',
+        bIU:document.getElementById('bIU')?.value||'',
+        content:document.getElementById('bEditor')?.innerHTML||'',
+        savedAt:Date.now()
+      };
+      localStorage.setItem('mm_bdraft',JSON.stringify(draft));
+      lbl.textContent='Draft autosaved ✓';lbl.className='asave-lbl saved';
+    }catch(e){lbl.textContent='Autosave failed';lbl.className='asave-lbl';}
+  },2000);
+}
+
+function loadDraft(){
+  try{
+    const d=JSON.parse(localStorage.getItem('mm_bdraft')||'null');
+    if(!d)return false;
+    if(d.content&&d.content!=='<br>'&&d.content.trim()){
+      const age=Math.round((Date.now()-d.savedAt)/60000);
+      if(!confirm(`Restore draft "${d.bT||'Untitled'}"?\nAutosaved ${age} minute(s) ago.`)){
+        localStorage.removeItem('mm_bdraft');return false;
+      }
+      ['bT','bC','bEx','bTg','bDt','bIU'].forEach(k=>{const el=document.getElementById(k);if(el&&d[k])el.value=d[k];});
+      document.getElementById('bEditor').innerHTML=d.content;
+      onEditorInput();
+      document.getElementById('asLbl').textContent='Draft restored ✓';
+      document.getElementById('asLbl').className='asave-lbl saved';
+      return true;
+    }
+  }catch{localStorage.removeItem('mm_bdraft');}
+  return false;
+}
+
+// ============================================================
+// PREVIEW
+// ============================================================
+function previewBlog(){
+  const title=document.getElementById('bT').value.trim()||'Untitled Post';
+  const cat=document.getElementById('bC').value;
+  const content=document.getElementById('bEditor').innerHTML;
+  const dt=document.getElementById('bDt').value||'Draft';
+  const wc=(document.getElementById('bEditor').innerText||'').split(/\s+/).filter(Boolean).length;
+  document.getElementById('prevCat').textContent=cat;
+  document.getElementById('prevTitle').textContent=title;
+  document.getElementById('prevMeta').textContent=dt+' · '+Math.max(1,Math.ceil(wc/200))+' min read · Preview';
+  document.getElementById('prevContent').innerHTML=content||'<p style="color:var(--gray)">No content yet.</p>';
+  document.getElementById('prevModal').classList.add('open');
+}
+function closePreview(){document.getElementById('prevModal').classList.remove('open');}
+
+// ============================================================
+// PROJECTS
+// ============================================================
 function showProjectForm(idx=-1){
   ePIdx=idx;
-  const form=document.getElementById('projectForm');form.style.display='block';
-  document.getElementById('pFormTitle').textContent=idx===-1?'// Add New Project':'// Edit Project';
-  ['ptitle','pdesc','prole','pproblem','pprocess','pimpact','pskills','ptags','plive','pgithub','pyt','pimgurl','pimgData'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  document.getElementById('pfeatured').checked=false;
-  document.getElementById('pimgPreview').style.display='none';
-  if(idx===-1){const draft=localStorage.getItem('mm_draft_project');if(draft){try{const d=JSON.parse(draft);Object.keys(d).forEach(k=>{const el=document.getElementById(k);if(el)el.value=d[k]||'';});}catch{}}}
-  if(idx>=0){const p=getP()[idx];const map={ptitle:'title',pdesc:'description',prole:'role',pproblem:'problem',pprocess:'process',pimpact:'impact',pskills:'skills',ptags:'tags',plive:'live_link',pgithub:'github_link',pyt:'youtube_id',pimgurl:'image_url'};Object.entries(map).forEach(([fid,key])=>{const el=document.getElementById(fid);if(el)el.value=p[key]||'';});document.getElementById('pfeatured').checked=p.featured||false;if(p.image_url){const prev=document.getElementById('pimgPreview');prev.src=p.image_url;prev.style.display='block';}}
-  form.scrollIntoView({behavior:'smooth'});
+  document.getElementById('pForm').style.display='block';
+  document.getElementById('pFTitle').textContent=idx===-1?'// Add New Project':'// Edit Project';
+  // Clear
+  ['pT','pD','pR','pPr','pPs','pI','pSk','pTg','pL','pG','pY','pIU','pID'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('pFeat').checked=false;
+  document.getElementById('pIPrev').style.display='none';
+  if(idx>=0){
+    const p=getP()[idx];if(!p)return;
+    document.getElementById('pT').value=p.title||'';
+    document.getElementById('pC').value=p.category||'cybersecurity';
+    document.getElementById('pD').value=p.description||'';
+    document.getElementById('pR').value=p.role||'';
+    document.getElementById('pPr').value=p.problem||'';
+    document.getElementById('pPs').value=p.process||'';
+    document.getElementById('pI').value=p.impact||'';
+    document.getElementById('pSk').value=p.skills||'';
+    document.getElementById('pTg').value=p.tags||'';
+    document.getElementById('pL').value=p.live_link||'';
+    document.getElementById('pG').value=p.github_link||'';
+    document.getElementById('pY').value=p.youtube_id||'';
+    document.getElementById('pIU').value=p.image_url||'';
+    document.getElementById('pFeat').checked=!!p.featured;
+    if(p.image_url){const prev=document.getElementById('pIPrev');prev.src=p.image_url;prev.style.display='block';}
+  }
+  document.getElementById('pForm').scrollIntoView({behavior:'smooth'});
 }
 
 async function saveProject(){
-  const title=document.getElementById('ptitle').value.trim();const desc=document.getElementById('pdesc').value.trim();
-  if(!title||!desc){showErr('pErr','Title and description required.');return;}
-  const imgUrl=document.getElementById('pimgurl').value.trim()||document.getElementById('pimgData').value||'';
-  const proj={title,description:desc,category:document.getElementById('pcat').value,role:document.getElementById('prole').value.trim(),problem:document.getElementById('pproblem').value.trim(),process:document.getElementById('pprocess').value.trim(),impact:document.getElementById('pimpact').value.trim(),skills:document.getElementById('pskills').value.trim(),tags:document.getElementById('ptags').value.trim(),live_link:document.getElementById('plive').value.trim(),github_link:document.getElementById('pgithub').value.trim(),youtube_id:document.getElementById('pyt').value.trim(),image_url:imgUrl,featured:document.getElementById('pfeatured').checked,views:0,date:new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'})};
-  if(USE_SUPABASE){try{if(ePIdx>=0){await sb.from('projects').update(proj).eq('id',getP()[ePIdx].id);}else{await sb.from('projects').insert([proj]);}}catch(e){showErr('pErr','Error: '+e.message);return;}}
-  else{const ps=getP();if(ePIdx>=0)ps[ePIdx]={...ps[ePIdx],...proj};else ps.unshift({...proj,id:Date.now().toString()});saveP(ps);}
-  localStorage.removeItem('mm_draft_project');showSucc('pSucc');cancelForm('projectForm');renderAll();
+  const title=document.getElementById('pT').value.trim();
+  const desc=document.getElementById('pD').value.trim();
+  if(!title){showErr('pErr','Title is required.');return;}
+  if(!desc){showErr('pErr','Description is required.');return;}
+  const imgUrl=document.getElementById('pIU').value.trim()||document.getElementById('pID').value||'';
+  const proj={
+    title,description:desc,
+    category:document.getElementById('pC').value,
+    role:document.getElementById('pR').value.trim(),
+    problem:document.getElementById('pPr').value.trim(),
+    process:document.getElementById('pPs').value.trim(),
+    impact:document.getElementById('pI').value.trim(),
+    skills:document.getElementById('pSk').value.trim(),
+    tags:document.getElementById('pTg').value.trim(),
+    live_link:document.getElementById('pL').value.trim(),
+    github_link:document.getElementById('pG').value.trim(),
+    youtube_id:document.getElementById('pY').value.trim(),
+    image_url:imgUrl,
+    featured:document.getElementById('pFeat').checked,
+    date:new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'})
+  };
+  if(ePIdx<0)proj.views=0; // only set views=0 for new projects
+  if(USE_SB){
+    try{
+      if(ePIdx>=0){
+        const id=getP()[ePIdx]?.id;
+        if(!id){showErr('pErr','Cannot find project ID.');return;}
+        const{error}=await sb.from('projects').update(proj).eq('id',id);
+        if(error)throw error;
+      } else {
+        const{error}=await sb.from('projects').insert([proj]);
+        if(error)throw error;
+      }
+    }catch(e){showErr('pErr','Supabase error: '+e.message);return;}
+  } else {
+    const ps=getP();
+    if(ePIdx>=0)ps[ePIdx]={...ps[ePIdx],...proj};
+    else ps.unshift({...proj,id:Date.now().toString()});
+    saveP(ps);
+  }
+  showSuc('pSuc');cancelForm('pForm');renderAll();
 }
 
-async function deleteProject(idx){if(!confirm('Delete?'))return;if(USE_SUPABASE){await sb.from('projects').delete().eq('id',getP()[idx].id);}else{const ps=getP();ps.splice(idx,1);saveP(ps);}renderAll();}
-
-async function renderProjectList(){
-  const ps=await fetchProjects();if(USE_SUPABASE)saveP(ps);
-  const list=document.getElementById('projectList');
-  if(!ps.length){list.innerHTML='<div class="empty-list">// No projects yet.</div>';return;}
-  list.innerHTML=ps.map((p,i)=>`<div class="item-row"><input type="checkbox" class="item-check" onchange="toggleSel('p',${i},this)"/><div style="flex:1"><div class="item-name">${p.featured?'⭐ ':''}${p.title}</div><div class="item-meta"><span class="ibadge">${p.category}</span><span>👁 ${p.views||0}</span><span>${p.date||''}</span></div></div><div class="item-actions"><button class="edit-btn" onclick="showProjectForm(${i})">Edit</button><button class="del-btn" onclick="deleteProject(${i})">Delete</button></div></div>`).join('');
+async function deleteProject(idx){
+  if(!confirm('Delete this project? This cannot be undone.'))return;
+  if(USE_SB){
+    const p=getP()[idx];if(!p)return;
+    const{error}=await sb.from('projects').delete().eq('id',p.id);
+    if(error){alert('Delete failed: '+error.message);return;}
+  } else {const ps=getP();ps.splice(idx,1);saveP(ps);}
+  renderAll();
 }
 
+async function renderPList(){
+  const ps=await fetchAllP();
+  const list=document.getElementById('pList');
+  if(!ps.length){list.innerHTML='<div class="emptylist">// No projects yet. Click + Add Project to get started.</div>';return;}
+  list.innerHTML=ps.map((p,i)=>`
+    <div class="irow" id="pr${i}">
+      <div class="irow-l">
+        <input type="checkbox" class="icheck" onchange="toggleBulkBtn('projects')" data-idx="${i}"/>
+        <div>
+          <div class="iname">${p.featured?'⭐ ':''}${p.title}</div>
+          <div class="imeta">
+            <span class="ibadge">${p.category}</span>
+            <span>👁 ${p.views||0}</span>
+            <span>${p.date||''}</span>
+            ${p.tags?`<span class="ibadge">#${p.tags.split(',')[0].trim()}</span>`:''}
+          </div>
+        </div>
+      </div>
+      <div class="ibtns">
+        <button class="editbtn" onclick="showProjectForm(${i})">Edit</button>
+        <button class="delbtn" onclick="deleteProject(${i})">Delete</button>
+      </div>
+    </div>`).join('');
+}
+
+// ============================================================
+// BLOGS
+// ============================================================
 function showBlogForm(idx=-1){
   eBIdx=idx;
-  const form=document.getElementById('blogForm');form.style.display='block';
-  document.getElementById('bFormTitle').textContent=idx===-1?'// Write New Post':'// Edit Post';
-  ['btitle','bexc','bimgurl','bimgData','btags'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  document.getElementById('blogEditor').innerHTML='';
-  document.getElementById('bimgPreview').style.display='none';
-  document.getElementById('bdate').value=new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'});
-  updateWC();
+  document.getElementById('bForm').style.display='block';
+  document.getElementById('bFTitle').textContent=idx===-1?'// Write New Post':'// Edit Post';
+  // Clear all fields
+  ['bT','bEx','bIU','bID','bTg'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('bEditor').innerHTML='';
+  document.getElementById('bDt').value=new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  document.getElementById('bIPrev').style.display='none';
+  document.getElementById('asLbl').textContent='Autosave ready';
+  document.getElementById('asLbl').className='asave-lbl';
+  onEditorInput();
   if(idx===-1){
-    // Only restore a draft if it was saved for a NEW post (not an edit session)
-    const draft=localStorage.getItem('mm_draft_blog');
-    if(draft){
-      try{
-        const d=JSON.parse(draft);
-        // Only restore if user confirms AND draft has actual content
-        if(d.bcontent&&d.bcontent.trim()&&d.bcontent!=='<br>'){
-          if(confirm('A draft was found. Restore it?\n\n"'+( d.btitle||'Untitled')+'"')){
-            document.getElementById('btitle').value=d.btitle||'';
-            document.getElementById('bexc').value=d.bexc||'';
-            document.getElementById('btags').value=d.btags||'';
-            document.getElementById('blogEditor').innerHTML=d.bcontent||'';
-            updateWC();
-          } else {
-            localStorage.removeItem('mm_draft_blog');
-          }
-        }
-      }catch{localStorage.removeItem('mm_draft_blog');}
-    }
+    // Try to restore draft (only for new posts)
+    loadDraft();
+  } else {
+    const b=getB()[idx];if(!b)return;
+    document.getElementById('bT').value=b.title||'';
+    document.getElementById('bC').value=b.category||'Cybersecurity';
+    document.getElementById('bEx').value=b.excerpt||'';
+    document.getElementById('bEditor').innerHTML=b.content||'';
+    document.getElementById('bDt').value=b.date||'';
+    document.getElementById('bIU').value=b.image_url||'';
+    document.getElementById('bTg').value=b.tags||'';
+    if(b.image_url){const prev=document.getElementById('bIPrev');prev.src=b.image_url;prev.style.display='block';}
+    onEditorInput();
   }
-  if(idx>=0){const b=getB()[idx];document.getElementById('btitle').value=b.title||'';document.getElementById('bcat').value=b.category||'Cybersecurity';document.getElementById('bexc').value=b.excerpt||'';document.getElementById('blogEditor').innerHTML=b.content||'';document.getElementById('bdate').value=b.date||'';document.getElementById('bimgurl').value=b.image_url||'';document.getElementById('btags').value=b.tags||'';if(b.image_url){const prev=document.getElementById('bimgPreview');prev.src=b.image_url;prev.style.display='block';}updateWC();}
-  form.scrollIntoView({behavior:'smooth'});
+  document.getElementById('bForm').scrollIntoView({behavior:'smooth'});
 }
 
 async function saveBlog(isDraft=false){
-  const title=document.getElementById('btitle').value.trim();const exc=document.getElementById('bexc').value.trim();const content=document.getElementById('blogEditor').innerHTML.trim();
-  if(!title||!exc||!content||content==='<br>'){showErr('bErr','Title, excerpt, and content required.');return;}
-  const imgUrl=document.getElementById('bimgurl').value.trim()||document.getElementById('bimgData').value||'';
-  const post={title,excerpt:exc,content,category:document.getElementById('bcat').value,tags:document.getElementById('btags').value.trim(),date:document.getElementById('bdate').value||new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'}),image_url:imgUrl,status:isDraft?'draft':'published'};
-  // FIX: do NOT reset views on edit — only set to 0 for brand new posts
+  const title=document.getElementById('bT').value.trim();
+  const exc=document.getElementById('bEx').value.trim();
+  const content=document.getElementById('bEditor').innerHTML.trim();
+  if(!title){showErr('bErr','Title is required.');return;}
+  if(!exc){showErr('bErr','Excerpt is required.');return;}
+  if(!content||content==='<br>'||content===''){showErr('bErr','Content is required.');return;}
+  const imgUrl=document.getElementById('bIU').value.trim()||document.getElementById('bID').value||'';
+  const post={
+    title,excerpt:exc,content,
+    category:document.getElementById('bC').value,
+    tags:document.getElementById('bTg').value.trim(),
+    date:document.getElementById('bDt').value||new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'}),
+    image_url:imgUrl,
+    status:isDraft?'draft':'published'
+  };
+  // FIX: never reset views on edit
   if(eBIdx<0)post.views=0;
-  if(USE_SUPABASE){try{if(eBIdx>=0){await sb.from('blogs').update(post).eq('id',getB()[eBIdx].id);}else{await sb.from('blogs').insert([post]);}}catch(e){showErr('bErr','Error: '+e.message);return;}}
-  else{const bs=getB();if(eBIdx>=0)bs[eBIdx]={...bs[eBIdx],...post};else bs.unshift({...post,id:Date.now().toString()});saveB(bs);}
-  localStorage.removeItem('mm_draft_blog');showSucc('bSucc');cancelForm('blogForm');renderAll();
+  if(USE_SB){
+    try{
+      if(eBIdx>=0){
+        const id=getB()[eBIdx]?.id;
+        if(!id){showErr('bErr','Cannot find post ID.');return;}
+        const{error}=await sb.from('blogs').update(post).eq('id',id);
+        if(error)throw error;
+      } else {
+        const{error}=await sb.from('blogs').insert([post]);
+        if(error)throw error;
+      }
+    }catch(e){showErr('bErr','Supabase error: '+e.message);return;}
+  } else {
+    const bs=getB();
+    if(eBIdx>=0)bs[eBIdx]={...bs[eBIdx],...post};
+    else bs.unshift({...post,id:Date.now().toString()});
+    saveB(bs);
+  }
+  localStorage.removeItem('mm_bdraft');
+  showSuc('bSuc');cancelForm('bForm');renderAll();
 }
 
-async function deleteBlog(idx){if(!confirm('Delete?'))return;if(USE_SUPABASE){await sb.from('blogs').delete().eq('id',getB()[idx].id);}else{const bs=getB();bs.splice(idx,1);saveB(bs);}renderAll();}
-
-async function renderBlogList(){
-  const bs=await fetchBlogs();if(USE_SUPABASE)saveB(bs);
-  const list=document.getElementById('blogList');
-  if(!bs.length){list.innerHTML='<div class="empty-list">// No posts yet.</div>';return;}
-  list.innerHTML=bs.map((b,i)=>`<div class="item-row"><input type="checkbox" class="item-check" onchange="toggleSel('b',${i},this)"/><div style="flex:1"><div class="item-name">${b.title}</div><div class="item-meta"><span class="ibadge">${b.category}</span>${b.status==='draft'?'<span class="ibadge draft-badge">Draft</span>':''}${b.tags?`<span>${b.tags}</span>`:''}<span>👁 ${b.views||0}</span><span>${b.date}</span></div></div><div class="item-actions"><button class="edit-btn" onclick="showBlogForm(${i})">Edit</button><button class="del-btn" onclick="deleteBlog(${i})">Delete</button></div></div>`).join('');
+async function deleteBlog(idx){
+  if(!confirm('Delete this post? This cannot be undone.'))return;
+  if(USE_SB){
+    const b=getB()[idx];if(!b)return;
+    const{error}=await sb.from('blogs').delete().eq('id',b.id);
+    if(error){alert('Delete failed: '+error.message);return;}
+  } else {const bs=getB();bs.splice(idx,1);saveB(bs);}
+  renderAll();
 }
 
-function toggleSel(type,idx,cb){const set=type==='p'?selP:selB;if(cb.checked)set.add(idx);else set.delete(idx);const btnId=type==='p'?'pBulk':'bBulk';document.getElementById(btnId).classList.toggle('show',set.size>0);}
+async function renderBList(){
+  const bs=await fetchAllB();
+  const list=document.getElementById('bList');
+  if(!bs.length){list.innerHTML='<div class="emptylist">// No blog posts yet. Click + Write Post to get started.</div>';return;}
+  list.innerHTML=bs.map((b,i)=>`
+    <div class="irow" id="br${i}">
+      <div class="irow-l">
+        <input type="checkbox" class="icheck" onchange="toggleBulkBtn('blogs')" data-idx="${i}"/>
+        <div>
+          <div class="iname">${b.title}</div>
+          <div class="imeta">
+            <span class="ibadge">${b.category}</span>
+            ${b.status==='draft'?'<span class="ibadge dbadge">Draft</span>':''}
+            <span>👁 ${b.views||0}</span>
+            <span>${b.date||''}</span>
+            ${b.tags?`<span class="ibadge">#${b.tags.split(',')[0].trim()}</span>`:''}
+          </div>
+        </div>
+      </div>
+      <div class="ibtns">
+        <button class="editbtn" onclick="showBlogForm(${i})">Edit</button>
+        <button class="delbtn" onclick="deleteBlog(${i})">Delete</button>
+      </div>
+    </div>`).join('');
+}
+
+// ============================================================
+// BULK DELETE
+// ============================================================
+function toggleBulkBtn(type){
+  const listId=type==='projects'?'pList':'bList';
+  const checks=document.querySelectorAll(`#${listId} .icheck:checked`);
+  const btn=document.getElementById(type==='projects'?'pBulk':'bBulk');
+  btn.style.display=checks.length?'inline-block':'none';
+}
 
 async function bulkDel(type){
-  const set=type==='projects'?selP:selB;
-  if(!set.size||!confirm(`Delete ${set.size} items?`))return;
+  const listId=type==='projects'?'pList':'bList';
+  const checks=Array.from(document.querySelectorAll(`#${listId} .icheck:checked`));
+  if(!checks.length)return;
+  if(!confirm(`Delete ${checks.length} selected item(s)? This cannot be undone.`))return;
+  const indices=checks.map(c=>parseInt(c.dataset.idx)).sort((a,b)=>b-a);
   const data=type==='projects'?getP():getB();
-  for(const idx of [...set].sort((a,b)=>b-a)){if(USE_SUPABASE)await sb.from(type).delete().eq('id',data[idx].id);data.splice(idx,1);}
-  if(!USE_SUPABASE){type==='projects'?saveP(data):saveB(data);}
-  set.clear();document.getElementById(type==='projects'?'pBulk':'bBulk').classList.remove('show');renderAll();
+  for(const idx of indices){
+    if(USE_SB&&data[idx]?.id){
+      const{error}=await sb.from(type).delete().eq('id',data[idx].id);
+      if(error){console.error('Bulk delete error:',error);continue;}
+    }
+    data.splice(idx,1);
+  }
+  if(!USE_SB){type==='projects'?saveP(data):saveB(data);}
+  document.getElementById(type==='projects'?'pBulk':'bBulk').style.display='none';
+  renderAll();
 }
 
-async function renderCommentList(){allC=await fetchComments();updateBadge();filterC(cFilter);}
+// ============================================================
+// COMMENTS
+// ============================================================
+async function renderCommentList(){
+  allC=await fetchAllC();
+  updateCBadge();
+  filterC(cFilter);
+}
 
 function filterC(status,btn){
   cFilter=status;
-  if(btn){document.querySelectorAll('.cf-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
-  const list=document.getElementById('commentList');
+  if(btn){document.querySelectorAll('.cfbtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
   const filtered=status==='all'?allC:allC.filter(c=>c.status===status);
-  if(!filtered.length){list.innerHTML='<div class="empty-list">// No comments.</div>';return;}
-  list.innerHTML=filtered.map((c,i)=>`<div class="cai"><div class="cai-hdr"><div><div class="cai-name">${c.name} <span style="font-weight:400;color:var(--gray);font-size:0.78rem;">&lt;${c.email}&gt;</span></div><div class="cai-meta">${c.blog_id||''} · ${c.created_at?new Date(c.created_at).toLocaleDateString():''}</div></div><div style="display:flex;gap:7px;align-items:center;"><input type="checkbox" class="item-check" onchange="toggleSelC('${c.id}',this)"/><span class="sbadge ${c.status==='pending'?'sp':c.status==='approved'?'sa':'sr'}">${c.status}</span></div></div><div class="cai-txt">${c.content}</div><div class="cai-act">${c.status!=='approved'?`<button class="approve-btn" onclick="updateC('${c.id}',${allC.indexOf(c)},'approved')">✓ Approve</button>`:''} ${c.status!=='rejected'?`<button class="reject-btn" onclick="updateC('${c.id}',${allC.indexOf(c)},'rejected')">✗ Reject</button>`:''}<button class="del-btn" onclick="delC('${c.id}',${allC.indexOf(c)})">Delete</button></div></div>`).join('');
+  const list=document.getElementById('cList');
+  if(!filtered.length){list.innerHTML='<div class="emptylist">// No comments found.</div>';return;}
+  list.innerHTML=filtered.map((c)=>`
+    <div class="cai">
+      <div class="caihdr">
+        <div>
+          <div class="cainame">${escHTML(c.name)} <span style="font-weight:400;color:var(--gray);font-size:.78rem;">&lt;${escHTML(c.email)}&gt;</span></div>
+          <div class="caimeta">Post: ${c.blog_id||'?'} · ${c.created_at?new Date(c.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):''}</div>
+        </div>
+        <span class="sbadge s${(c.status||'p')[0]}">${c.status}</span>
+      </div>
+      <div class="caitxt">${escHTML(c.content)}</div>
+      <div class="caibtn-row">
+        ${c.status!=='approved'?`<button class="appbtn" onclick="updateC('${c.id}','approved')">✓ Approve</button>`:''}
+        ${c.status!=='rejected'?`<button class="rejbtn" onclick="updateC('${c.id}','rejected')">✗ Reject</button>`:''}
+        <button class="delbtn" onclick="delC('${c.id}')">Delete</button>
+      </div>
+    </div>`).join('');
 }
 
-function toggleSelC(id,cb){if(cb.checked)selC.add(id);else selC.delete(id);}
-async function bulkDelComments(){if(!selC.size||!confirm(`Delete ${selC.size} comments?`))return;for(const id of selC){if(USE_SUPABASE)await sb.from('comments').delete().eq('id',id);}selC.clear();renderCommentList();}
-async function updateC(id,idx,status){if(USE_SUPABASE)await sb.from('comments').update({status}).eq('id',id);if(allC[idx])allC[idx].status=status;updateBadge();filterC(cFilter);}
-async function delC(id,idx){if(!confirm('Delete?'))return;if(USE_SUPABASE)await sb.from('comments').delete().eq('id',id);allC.splice(idx,1);updateBadge();filterC(cFilter);}
+async function updateC(id,status){
+  if(USE_SB){const{error}=await sb.from('comments').update({status}).eq('id',id);if(error){console.error('updateC:',error);return;}}
+  const idx=allC.findIndex(c=>c.id===id);if(idx>=0)allC[idx].status=status;
+  updateCBadge();filterC(cFilter);
+}
 
-function updateBadge(){const p=allC.filter(c=>c.status==='pending').length;const tab=document.getElementById('commentsTab');const ex=tab.querySelector('.badge');if(ex)ex.remove();if(p>0){const b=document.createElement('span');b.className='badge';b.textContent=p;tab.appendChild(b);}}
+async function delC(id){
+  if(!confirm('Delete this comment?'))return;
+  if(USE_SB){const{error}=await sb.from('comments').delete().eq('id',id);if(error){console.error('delC:',error);return;}}
+  const idx=allC.findIndex(c=>c.id===id);if(idx>=0)allC.splice(idx,1);
+  updateCBadge();filterC(cFilter);
+}
 
-function renderAnalytics(){
-  const ps=getP();const bs=getB();
-  const tPV=ps.reduce((a,p)=>a+(p.views||0),0);
-  const tBV=bs.reduce((a,b)=>a+(b.views||0),0);
-  const grid=document.getElementById('analyticsGrid');
-  grid.innerHTML=`
-    <div class="chart-card"><div class="chart-title">// Project Views</div><div class="chart-wrap"><canvas id="pChart"></canvas></div></div>
-    <div class="chart-card"><div class="chart-title">// Blog Views</div><div class="chart-wrap"><canvas id="bChart"></canvas></div></div>
-    <div class="chart-card"><div class="chart-title">// Content by Category</div><div class="chart-wrap"><canvas id="cChart"></canvas></div></div>
-    <div class="chart-card"><div class="chart-title">// Quick Stats</div><div style="padding:8px 0;display:flex;flex-direction:column;gap:11px;">${[['Total Project Views',tPV],['Total Blog Views',tBV],['Published Posts',bs.filter(b=>b.status!=='draft').length],['Draft Posts',bs.filter(b=>b.status==='draft').length],['Featured Projects',ps.filter(p=>p.featured).length],['Pending Comments',allC.filter(c=>c.status==='pending').length]].map(([l,v])=>`<div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);padding-bottom:8px;"><span style="font-size:0.8rem;color:var(--text2);">${l}</span><span style="font-family:'IBM Plex Mono',monospace;font-size:0.88rem;color:var(--accent);font-weight:700;">${v}</span></div>`).join('')}</div></div>`;
+function updateCBadge(){
+  const n=allC.filter(c=>c.status==='pending').length;
+  const tab=document.getElementById('ctab');
+  const ex=tab.querySelector('.badge');if(ex)ex.remove();
+  if(n>0){const b=document.createElement('span');b.className='badge';b.textContent=n>99?'99+':n;tab.appendChild(b);}
+}
 
-  const ac=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+function escHTML(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// ============================================================
+// ANALYTICS
+// ============================================================
+async function renderAnalytics(){
+  const ps=getP(),bs=getB();
+  // Top projects
+  const sp=[...ps].sort((a,b)=>(b.views||0)-(a.views||0)).slice(0,5);
+  const maxPV=Math.max(1,...sp.map(p=>p.views||0));
+  document.getElementById('aTProj').innerHTML=sp.length
+    ?sp.map(p=>`<div class="topitem"><span class="topname">${p.title}</span><div class="topbar-w"><div class="topbar-bg"><div class="topbar-fill" style="width:${Math.round((p.views||0)/maxPV*100)}%"></div></div><span class="topviews">${p.views||0}</span></div></div>`).join('')
+    :'<p style="color:var(--gray);font-size:.8rem;">No data yet.</p>';
+  // Top blogs
+  const sb2=[...bs].sort((a,b)=>(b.views||0)-(a.views||0)).slice(0,5);
+  const maxBV=Math.max(1,...sb2.map(b=>b.views||0));
+  document.getElementById('aTBlog').innerHTML=sb2.length
+    ?sb2.map(b=>`<div class="topitem"><span class="topname">${b.title}</span><div class="topbar-w"><div class="topbar-bg"><div class="topbar-fill" style="width:${Math.round((b.views||0)/maxBV*100)}%"></div></div><span class="topviews">${b.views||0}</span></div></div>`).join('')
+    :'<p style="color:var(--gray);font-size:.8rem;">No data yet.</p>';
+  // Charts
   const isDark=document.documentElement.getAttribute('data-theme')==='dark';
-  const gc=isDark?'rgba(255,255,255,0.05)':'rgba(0,0,0,0.05)';
-  const tc=isDark?'#7a8599':'#64748b';
-  const opts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:gc},ticks:{color:tc,font:{size:10}}},y:{grid:{color:gc},ticks:{color:tc,font:{size:10}}}}};
-
-  if(ps.length){new Chart(document.getElementById('pChart'),{type:'bar',data:{labels:ps.slice(0,6).map(p=>p.title.slice(0,15)+'..'),datasets:[{data:ps.slice(0,6).map(p=>p.views||0),backgroundColor:ac+'88',borderColor:ac,borderWidth:1,borderRadius:4}]},options:opts});}
-  if(bs.length){new Chart(document.getElementById('bChart'),{type:'bar',data:{labels:bs.slice(0,6).map(b=>b.title.slice(0,15)+'..'),datasets:[{data:bs.slice(0,6).map(b=>b.views||0),backgroundColor:ac+'88',borderColor:ac,borderWidth:1,borderRadius:4}]},options:opts});}
-  const cats={};[...ps,...bs].forEach(item=>{const c=item.category||'Other';cats[c]=(cats[c]||0)+1;});
-  if(Object.keys(cats).length){const colors=['#0066cc','#00d4ff','#f0b429','#22c55e','#f87171','#a78bfa'];new Chart(document.getElementById('cChart'),{type:'doughnut',data:{labels:Object.keys(cats),datasets:[{data:Object.values(cats),backgroundColor:colors,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:tc,font:{size:10},padding:8}}}}});}
+  const textColor=isDark?'#a0aec0':'#64748b';
+  const cats={};ps.forEach(p=>{cats[p.category]=(cats[p.category]||0)+1;});
+  if(catChartI)catChartI.destroy();
+  catChartI=new Chart(document.getElementById('catChart'),{type:'doughnut',data:{labels:Object.keys(cats),datasets:[{data:Object.values(cats),backgroundColor:['#0066cc','#22c55e','#f0b429','#a855f7','#ef4444']}]},options:{plugins:{legend:{labels:{color:textColor}}},responsive:true}});
+  if(ovChartI)ovChartI.destroy();
+  const accent=isDark?'#00d4ff':'#0066cc';
+  ovChartI=new Chart(document.getElementById('ovChart'),{type:'bar',data:{labels:['Projects','Published','Drafts','Comments','Views'],datasets:[{data:[ps.length,bs.filter(b=>b.status==='published').length,bs.filter(b=>b.status==='draft').length,allC.length,ps.reduce((a,p)=>a+(p.views||0),0)+bs.reduce((a,b)=>a+(b.views||0),0)],backgroundColor:accent,borderRadius:6}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:textColor}},y:{ticks:{color:textColor},beginAtZero:true}},responsive:true}});
 }
 
-async function renderStats(){const ps=getP();const bs=getB();document.getElementById('statsRow').innerHTML=`<div class="stat-box"><div class="stat-box-num">${ps.length}</div><div class="stat-box-label">Projects</div></div><div class="stat-box"><div class="stat-box-num">${bs.length}</div><div class="stat-box-label">Posts</div></div><div class="stat-box"><div class="stat-box-num">${bs.filter(b=>b.status==='draft').length}</div><div class="stat-box-label">Drafts</div></div><div class="stat-box"><div class="stat-box-num">${allC.filter(c=>c.status==='pending').length}</div><div class="stat-box-label">Pending</div></div><div class="stat-box"><div class="stat-box-num">${ps.reduce((a,p)=>a+(p.views||0),0)+bs.reduce((a,b)=>a+(b.views||0),0)}</div><div class="stat-box-label">Total Views</div></div>`;}
+// ============================================================
+// STATS ROW
+// ============================================================
+async function renderStats(){
+  const ps=getP(),bs=getB();
+  document.getElementById('sRow').innerHTML=`
+    <div class="sbox"><div class="snum">${ps.length}</div><div class="slbl">Projects</div></div>
+    <div class="sbox"><div class="snum">${bs.filter(b=>b.status==='published').length}</div><div class="slbl">Published</div></div>
+    <div class="sbox"><div class="snum">${bs.filter(b=>b.status==='draft').length}</div><div class="slbl">Drafts</div></div>
+    <div class="sbox"><div class="snum">${allC.filter(c=>c.status==='pending').length}</div><div class="slbl">Pending</div></div>
+    <div class="sbox"><div class="snum">${ps.reduce((a,p)=>a+(p.views||0),0)+bs.reduce((a,b)=>a+(b.views||0),0)}</div><div class="slbl">Total Views</div></div>`;
+}
 
-function showSucc(id){const el=document.getElementById(id);el.style.display='inline';setTimeout(()=>el.style.display='none',2500);}
-function showErr(id,msg){const el=document.getElementById(id);el.textContent=msg;el.style.display='inline';setTimeout(()=>el.style.display='none',4000);}
+function showSuc(id){const el=document.getElementById(id);if(!el)return;el.style.display='inline';setTimeout(()=>el.style.display='none',2500);}
+function showErr(id,msg){const el=document.getElementById(id);if(!el)return;el.textContent=msg;el.style.display='inline';setTimeout(()=>el.style.display='none',5000);}
 
-async function renderAll(){allC=await fetchComments();await renderProjectList();await renderBlogList();updateBadge();renderStats();renderAnalytics();}
+// ============================================================
+// INIT
+// ============================================================
+async function renderAll(){
+  allC=await fetchAllC();
+  updateCBadge();
+  await renderPList();
+  await renderBList();
+  renderStats();
+}
 </script>
 </body>
 </html>
