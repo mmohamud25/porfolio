@@ -139,7 +139,8 @@ img { filter:var(--img-filter); transition:filter var(--tr-base); display:block;
 /* ============================================================
    NAV
 ============================================================ */
-nav {
+/* Scoped to main nav only — prevents position:fixed leaking to any other nav elements */
+body > nav {
   position:fixed; top:2px; left:0; right:0; z-index:100;
   display:flex; justify-content:space-between; align-items:center;
   padding:var(--sp-4) var(--sp-9);
@@ -1055,7 +1056,7 @@ footer span { color:var(--accent); }
    RESPONSIVE — 3 breakpoints: 1024, 640, 480
 ============================================================ */
 @media(max-width:1024px){
-  nav { padding:var(--sp-4) var(--sp-6); }
+  body > nav { padding:var(--sp-4) var(--sp-6); }
   .section-inner { padding-left:var(--sp-6); padding-right:var(--sp-6); }
   #hero { padding-left:var(--sp-6); padding-right:var(--sp-6); }
   .about-grid { grid-template-columns:1fr; gap:var(--sp-8); }
@@ -1063,7 +1064,7 @@ footer span { color:var(--accent); }
   .lead-grid { grid-template-columns:1fr; }
 }
 @media(max-width:640px){
-  nav { padding:var(--sp-3) var(--sp-4); }
+  body > nav { padding:var(--sp-3) var(--sp-4); }
   .nav-links { display:none; }
   .hamburger { display:flex; }
   /* Hide theme label text on mobile — keep icon only */
@@ -1370,10 +1371,6 @@ footer span { color:var(--accent); }
     <div class="contact-grid">
       <div class="contact-info">
         <p id="cDesc">Open to cybersecurity roles, collaborations, and conversations about tech education. Based in Columbus, OH.</p>
-        <nav class="contact-links" aria-label="Social links">
-          <a href="https://linkedin.com/in/mohamed-2-mohamud" target="_blank" rel="noopener" class="contact-link"><div class="contact-icon">in</div>linkedin.com/in/mohamed-2-mohamud</a>
-          <a href="https://mmohamud.me" target="_blank" rel="noopener" class="contact-link"><div class="contact-icon">M</div>mmohamud.me</a>
-        </nav>
       </div>
       <div>
         <div class="float-group">
