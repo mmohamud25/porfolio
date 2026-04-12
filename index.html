@@ -1424,7 +1424,7 @@ footer span { color:var(--accent); }
     <div style="border-top:1px solid var(--border);margin-bottom:var(--sp-4);"></div>
     <!-- Bottom line -->
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:var(--sp-3);">
-      <span>Built by <span>Mohamed Mohamud</span> · 2026</span>
+      <span>Built by <span>Mohamed Mohamud</span> · Columbus, OH · 2026</span>
       <span style="color:var(--border2);">Cybersecurity · IT Support · Education</span>
     </div>
   </div>
@@ -1631,7 +1631,11 @@ async function fetchProjects(){
 async function fetchBlogs(){
   if(USE_SB){
     try{
-      const{data,error}=await sb.from('blogs').select('*').eq('status','published').order('created_at',{ascending:false});
+      const now=new Date().toISOString();
+      // Fetch published posts AND scheduled posts whose time has arrived
+      const{data,error}=await sb.from('blogs').select('*')
+        .or(`status.eq.published,and(status.eq.scheduled,scheduled_at.lte.${now})`)
+        .order('created_at',{ascending:false});
       if(error)throw error;
       if(data?.length)localStorage.setItem('mm_b_cache',JSON.stringify(data));
       return data||[];
@@ -1640,19 +1644,43 @@ async function fetchBlogs(){
       try{return JSON.parse(localStorage.getItem('mm_b_cache')||'[]');}catch{return[];}
     }
   }
-  try{return JSON.parse(localStorage.getItem('mm_blogs')||'[]').filter(b=>b.status!=='draft');}catch{return[];}
+  try{
+    return JSON.parse(localStorage.getItem('mm_blogs')||'[]')
+      .filter(b=>{
+        if(b.status==='draft')return false;
+        if(b.status==='scheduled')return b.scheduled_at&&new Date(b.scheduled_at)<=new Date();
+        return true;
+      });
+  }catch{return[];}
 }
+
 async function fetchComments(blogId){
   if(!USE_SB)return[];
   try{
-    const{data,error}=await sb.from('comments').select('*').eq('blog_id',String(blogId)).eq('status','approved').order('created_at',{ascending:true});
+    const{data,error}=await sb.from('comments').select('*')
+      .eq('blog_id',String(blogId))
+      .eq('status','approved')
+      .order('created_at',{ascending:true});
     if(error)throw error;
     return data||[];
   }catch(e){console.error('fetchComments:',sbErr(e));return[];}
 }
+
 async function incViews(table,id){
   if(!USE_SB||!id)return;
-  try{await sb.rpc('increment_'+table+'_views',{row_id:id});}catch(e){console.warn('incViews:',sbErr(e));}
+  try{
+    await sb.rpc('increment_'+table+'_views',{row_id:id});
+    // Track daily views for analytics chart
+    try{
+      const today=new Date().toISOString().slice(0,10);
+      const hist=JSON.parse(localStorage.getItem('mm_view_history')||'{}');
+      hist[today]=(hist[today]||0)+1;
+      // Keep only last 60 days
+      const keys=Object.keys(hist).sort();
+      if(keys.length>60)keys.slice(0,keys.length-60).forEach(k=>delete hist[k]);
+      localStorage.setItem('mm_view_history',JSON.stringify(hist));
+    }catch{}
+  }catch(e){console.warn('incViews:',sbErr(e));}
 }
 
 // ============================================================
@@ -1923,7 +1951,18 @@ function renderComments(comments,blogId){
   const a=Math.ceil(Math.random()*9),b_=Math.ceil(Math.random()*9),ans=a+b_;
   function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
   const list=comments.length
-    ?comments.map(c=>`<div class="comment-item"><div class="comment-header"><span class="comment-name">${esc(c.name)}</span><span class="comment-date">${c.created_at?new Date(c.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):''}</span></div><div class="comment-text">${esc(c.content)}</div></div>`).join('')
+    ?comments.map(c=>`
+      <div class="comment-item">
+        <div class="comment-header">
+          <span class="comment-name">${esc(c.name)}</span>
+          <span class="comment-date">${c.created_at?new Date(c.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):''}</span>
+        </div>
+        <div class="comment-text">${esc(c.content)}</div>
+        ${c.admin_reply?`<div style="margin-top:10px;padding:10px 13px;background:var(--accent-bg);border-left:3px solid var(--accent);border-radius:0 var(--r-sm) var(--r-sm) 0;">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:.64rem;color:var(--accent);margin-bottom:5px;letter-spacing:1px;font-weight:700;">// REPLY FROM AUTHOR</div>
+          <div style="font-size:var(--t-sm);color:var(--text2);line-height:1.7;">${esc(c.admin_reply)}</div>
+        </div>`:''}
+      </div>`).join('')
     :'<div class="no-comments">// No comments yet. Be the first to share your thoughts.</div>';
   document.getElementById('modalComments').innerHTML=`
     <div class="comments-wrap">
