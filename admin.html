@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
+  <meta name="robots" content="noindex,nofollow"/>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Admin | mmohamud.me</title>
@@ -526,7 +527,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
               <div class="esep"></div>
               <button class="eb" onclick="eInsLink()">🔗 Link</button>
               <button class="eb" onclick="eInsImg()">🖼 Image</button>
-              <button class="eb" onclick="eCmd('insertHorizontalRule')">— Rule</button>
+              <button class="eb" onclick="eCmd('insertHorizontalRule')"> |  Rule</button>
               <div class="esep"></div>
               <button class="eb" onclick="eCmd('undo')">↩</button>
               <button class="eb" onclick="eCmd('redo')">↪</button>
@@ -567,7 +568,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
           </div>
           <!-- Live card preview -->
           <div class="preview-pane" id="previewPane">
-            <div class="preview-pane-title">// CARD PREVIEW — how it looks on the site</div>
+            <div class="preview-pane-title">// CARD PREVIEW  |  how it looks on the site</div>
             <div class="preview-card-mock">
               <div class="preview-card-img" id="prevCardImg"><span style="font-family:'IBM Plex Mono',monospace;font-size:.66rem;color:var(--gray);">// NO IMAGE</span></div>
               <div class="preview-card-body">
@@ -669,7 +670,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
           <button class="addbtn" onclick="document.getElementById('snipForm').classList.toggle('open')">+ New Snippet</button>
         </div>
       </div>
-      <p style="font-size:.8rem;color:var(--text2);margin-bottom:13px;">Save reusable blocks of text — author bios, call-to-actions, disclaimers — and insert them into any blog post with one click.</p>
+      <p style="font-size:.8rem;color:var(--text2);margin-bottom:13px;">Save reusable blocks of text  |  author bios, call-to-actions, disclaimers  |  and insert them into any blog post with one click.</p>
       <div class="snip-form fcard" id="snipForm">
         <div class="ftitle">// Create Snippet</div>
         <div class="fg"><label class="fglabel">Snippet Name *</label><input type="text" id="snipName" class="ff" placeholder="e.g. About the Author"/></div>
@@ -692,10 +693,13 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
         <div class="achart"><div class="actitle">Content Overview</div><canvas id="ovChart" height="170"></canvas></div>
         <div class="achart" style="grid-column:1/-1">
           <div class="actitle" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-            <span>View History — Last 30 Days</span>
+            <span>View History  |  Last 30 Days</span>
             <span style="font-size:.68rem;color:var(--gray);font-family:'IBM Plex Mono',monospace;">Tracked from public site visits</span>
           </div>
           <canvas id="histChart" height="90"></canvas>
+          <div id="histChartNote" style="display:none;text-align:center;padding:10px;font-size:.75rem;color:var(--gray);font-family:'IBM Plex Mono',monospace;">
+            No view history yet. Views are tracked when visitors open posts on your live site.
+          </div>
         </div>
         <div class="achart" style="grid-column:1/-1">
           <div class="actitle" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
@@ -762,6 +766,17 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
           </select>
           <span style="font-size:.84rem;color:var(--text2);">of inactivity</span>
         </div>
+      </div>
+      <!-- Last Login -->
+      <div class="cp-wrap" id="lastLoginWrap">
+        <div class="cp-title">// Last Login</div>
+        <div id="lastLoginInfo" style="font-size:.8rem;color:var(--text2);line-height:1.8;font-family:'IBM Plex Mono',monospace;"></div>
+      </div>
+      <!-- Backup -->
+      <div class="cp-wrap">
+        <div class="cp-title">// Backup and Export</div>
+        <p style="font-size:.8rem;color:var(--text2);margin-bottom:11px;">Export all your projects, blog posts, and comments as a single JSON file.</p>
+        <button class="cp-btn" onclick="backupAll()">↓ Download Full Backup</button>
       </div>
       <!-- About -->
       <div class="cp-wrap">
@@ -832,6 +847,8 @@ let currentPass=localStorage.getItem('mm_admin_pass')||'kulan2026';
 function doLogin(){
   const pw=document.getElementById('pwIn').value;
   if(pw===currentPass){
+    // Record last login timestamp and browser
+    localStorage.setItem('mm_last_login',JSON.stringify({time:new Date().toISOString(),ua:navigator.userAgent.slice(0,100)}));
     document.getElementById('loginScreen').style.display='none';
     document.getElementById('dashboard').style.display='block';
     checkSB();renderAll();resetSessionTimer();
@@ -847,6 +864,25 @@ function doLogin(){
     document.getElementById('pwIn').value='';
     document.getElementById('pwIn').focus();
   }
+}
+
+function backupAll(){
+  const ps=getP(),bs=getB();
+  const allC=JSON.parse(localStorage.getItem('mm_comments')||'[]');
+  const backup={
+    exported:new Date().toISOString(),
+    version:'1.0',
+    projects:ps,
+    blog_posts:bs,
+    comments:allC,
+    view_history:getViewHistory()
+  };
+  const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='mmohamud_backup_'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+  toast('Backup downloaded');
 }
 
 function doLogout(){
@@ -938,6 +974,20 @@ function switchPanel(p,btn){
   btn.classList.add('active');
   if(p==='comments')renderCommentList();
   if(p==='analytics')renderAnalytics();
+  if(p==='settings'){
+    const ll=JSON.parse(localStorage.getItem('mm_last_login')||'null');
+    const el=document.getElementById('lastLoginInfo');
+    if(el){
+      if(ll){
+        const dt=new Date(ll.time);
+        const ago=Math.round((Date.now()-dt.getTime())/60000);
+        const agoStr=ago<60?ago+' min ago':ago<1440?Math.round(ago/60)+' hr ago':Math.round(ago/1440)+' days ago';
+        el.innerHTML='Time: '+dt.toLocaleString()+'<br>'+agoStr+'<br>Browser: '+escHTML(ll.ua);
+      } else {
+        el.textContent='No login recorded yet (records from next login)';
+      }
+    }
+  }
   if(p==='images')renderImgLib();
   if(p==='snippets')renderSnippets();
   if(p==='changelog')renderChangelog();
@@ -1013,6 +1063,10 @@ function showBanner(text){
 // IMAGE COMPRESSION
 // ============================================================
 function compressImg(file,cb){
+  // Warn if original file is very large (>5MB)
+  if(file.size>5*1024*1024){
+    toast('Image is '+Math.round(file.size/1024/1024)+'MB  |  compressing, but consider using a smaller source file','warn');
+  }
   const r=new FileReader();
   r.onload=e=>{
     const img=new Image();
@@ -1214,7 +1268,7 @@ function toggleFullscreen(){
 function toggleShortcuts(){document.getElementById('shortcutsWrap').classList.toggle('open');}
 function toggleLivePreview(){document.getElementById('previewPane').classList.toggle('open');if(document.getElementById('previewPane').classList.contains('open'))updateLivePreview();}
 
-// Paste cleaner — strips Word/Docs garbage
+// Paste cleaner  |  strips Word/Docs garbage
 function handlePaste(e){
   e.preventDefault();
   const plain=e.clipboardData.getData('text/plain');
@@ -1895,9 +1949,13 @@ async function renderAnalytics(){
     days.push(i===0?'Today':i===1?'Yesterday':key.slice(5));
     counts.push(history[key]||0);
   }
+  // Show note if no history data at all
+  const hasHistData=counts.some(c=>c>0);
+  const histNote=document.getElementById('histChartNote');
+  if(histNote)histNote.style.display=hasHistData?'none':'block';
   histCI=new Chart(document.getElementById('histChart'),{type:'line',data:{
     labels:days,
-    datasets:[{label:'Daily Views',data:counts,borderColor:ac,backgroundColor:isDark?'rgba(56,189,248,.08)':'rgba(0,102,204,.07)',fill:true,tension:.4,pointRadius:counts.some(c=>c>0)?3:0,pointBackgroundColor:ac,borderWidth:2}]},
+    datasets:[{label:'Daily Views',data:counts,borderColor:ac,backgroundColor:isDark?'rgba(56,189,248,.08)':'rgba(0,102,204,.07)',fill:true,tension:.4,pointRadius:hasHistData?3:0,pointBackgroundColor:ac,borderWidth:2}]},
     options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:tc,font:{size:9},maxTicksLimit:10},grid:{color:gridColor}},y:{ticks:{color:tc,font:{size:10}},beginAtZero:true,grid:{color:gridColor}}},responsive:true}});
 
   // ── Quick Stats ──
@@ -1909,8 +1967,8 @@ async function renderAnalytics(){
     <div class="qs-item"><div class="qs-val">${avgViews}</div><div class="qs-lbl">Avg Views / Post</div></div>
     <div class="qs-item"><div class="qs-val">${bs.filter(b=>b.status==='published').length}</div><div class="qs-lbl">Published Posts</div></div>
     <div class="qs-item"><div class="qs-val">${ps.filter(p=>p.featured).length}</div><div class="qs-lbl">Featured Projects</div></div>
-    <div class="qs-item" style="grid-column:1/-1"><div class="qs-lbl" style="margin-bottom:4px">Top Post</div><div class="qs-val" style="font-size:.9rem;font-weight:600;">${topPost?escHTML(topPost.title)+' — '+topPost.views+' views':'No posts yet'}</div></div>
-    <div class="qs-item" style="grid-column:1/-1"><div class="qs-lbl" style="margin-bottom:4px">Top Project</div><div class="qs-val" style="font-size:.9rem;font-weight:600;">${topProj?escHTML(topProj.title)+' — '+topProj.views+' views':'No projects yet'}</div></div>`;
+    <div class="qs-item" style="grid-column:1/-1"><div class="qs-lbl" style="margin-bottom:4px">Top Post</div><div class="qs-val" style="font-size:.9rem;font-weight:600;">${topPost?escHTML(topPost.title)+'  |  '+topPost.views+' views':'No posts yet'}</div></div>
+    <div class="qs-item" style="grid-column:1/-1"><div class="qs-lbl" style="margin-bottom:4px">Top Project</div><div class="qs-val" style="font-size:.9rem;font-weight:600;">${topProj?escHTML(topProj.title)+'  |  '+topProj.views+' views':'No projects yet'}</div></div>`;
 }
 
 // ============================================================
