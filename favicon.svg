@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="6" fill="#0a0a0a"/>
+  <rect width="32" height="32" rx="6" fill="none" stroke="#c8f76b" stroke-width="1.5" stroke-opacity="0.4"/>
+  <text x="16" y="22" font-family="'Geist Mono', monospace" font-size="13" font-weight="700" fill="#c8f76b" text-anchor="middle" letter-spacing="0">MM</text>
+</svg>

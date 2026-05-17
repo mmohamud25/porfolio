@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Mohamed Mohamud</title>
   <meta name="description" content="Cybersecurity professional. CompTIA Security+ certified. Pursuing MS in Cybersecurity and Information Assurance at WGU."/>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+  <link rel="shortcut icon" href="favicon.svg"/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
@@ -194,7 +196,7 @@ a { color: inherit; text-decoration: none; }
   background: var(--accent); animation: pulse 1.6s ease-in-out infinite; }
 .now-card__list { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 14px; }
 .now-card__item { display: flex; gap: 12px; font-size: 15px; align-items: flex-start; }
-.now-card__item::before { content: 'to'; color: var(--accent); font-family: var(--font-mono); padding-top: 2px; }
+.now-card__item::before { content: '--'; color: var(--accent); font-family: var(--font-mono); padding-top: 3px; font-size: 12px; }
 
 /* 16. CONTACT */
 .contact { position: relative; padding: 120px var(--sp-14) 80px;
@@ -385,7 +387,7 @@ a { color: inherit; text-decoration: none; }
     <a href="#contact">Contact</a>
   </div>
   <div class="nav__right">
-    <button class="btn-lang" id="langBtn" onclick="toggleLang()">SO</button>
+    <button class="btn-lang" id="langBtn" onclick="toggleLang()" title="Somali / English toggle" aria-label="Toggle Somali language">SO</button>
     <div class="status-pill">
       <div class="status-pill__dot"></div>
       <span id="statusText">Available Now</span>
@@ -504,7 +506,7 @@ a { color: inherit; text-decoration: none; }
       </div>
     </div>
     <div class="timeline__row">
-      <div class="timeline__year">PRIOR</div>
+      <div class="timeline__year">2018–2022</div>
       <div>
         <div class="timeline__role">Shift Supervisor</div>
         <div class="timeline__org">SECURITAS · ALLIED UNIVERSAL</div>
@@ -973,7 +975,7 @@ a { color: inherit; text-decoration: none; }
           <circle cx="14" cy="16" r="5" fill="#ff5f57"/><circle cx="28" cy="16" r="5" fill="#febc2e"/><circle cx="42" cy="16" r="5" fill="#28c840"/>
           <text x="60" y="21" font-family="monospace" font-size="9" fill="#737373">CySA+ Study Hub · CS0-003</text>
           <rect x="340" y="8" width="50" height="15" rx="3" fill="rgba(254,188,46,0.12)" stroke="#febc2e" stroke-width="0.6"/>
-          <text x="347" y="19" font-family="monospace" font-size="7" fill="#febc2e">IN PROG</text>
+          <text x="347" y="19" font-family="monospace" font-size="7" fill="#febc2e">CERT IN PROGRESS</text>
           <!-- 4 topic cards grid -->
           <rect x="10" y="40" width="184" height="72" rx="5" fill="#131313" stroke="rgba(200,247,107,0.15)"/>
           <text x="20" y="57" font-family="monospace" font-size="7" fill="#c8f76b">// THREAT &amp; VULN MGMT</text>
@@ -1051,7 +1053,7 @@ a { color: inherit; text-decoration: none; }
         <li class="now-card__item" id="now2">Pursuing MS in Cybersecurity and Information Assurance at WGU.</li>
         <li class="now-card__item" id="now3">Building SentinelIQ Phase 2: AI-powered threat scoring and alert automation.</li>
         <li class="now-card__item" id="now4">Growing Kulan Cyber Lab with AI-driven CTF scenarios for Security+ learners.</li>
-        <li class="now-card__item" id="now5">Co-hosting Intel Cast podcast on cybersecurity and tech education for the Somali diaspora.</li>
+        <li class="now-card__item" id="now5">Co-hosting <a href="https://open.spotify.com/show/intelcast" target="_blank" style="color:var(--accent);text-decoration:none;">Intel Cast</a> podcast on cybersecurity and tech education for the Somali diaspora.</li>
       </ul>
     </div>
   </div>
@@ -1085,7 +1087,7 @@ a { color: inherit; text-decoration: none; }
 <div class="contact" id="contact">
   <div class="grid-bg" style="position:absolute;inset:0;pointer-events:none;z-index:0;"></div>
   <div style="position:relative;z-index:1;">
-    <span class="mono-label mono-label--accent">08 / CONTACT</span>
+    <span class="mono-label mono-label--accent">07 / CONTACT</span>
     <h2 class="contact__heading" style="margin-top:14px;" id="contactHeading">Let's work <em>together.</em></h2>
     <div class="contact-socials">
       <a href="https://linkedin.com/in/mohamed-2-mohamud" target="_blank">LinkedIn</a>
@@ -1099,7 +1101,7 @@ a { color: inherit; text-decoration: none; }
         <label class="flbl" for="cEmail">Email</label>
         <input class="finp" type="email" id="cEmail" name="email" required placeholder="your@email.com"/>
         <label class="flbl" for="cMsg">Message</label>
-        <textarea class="fta" id="cMsg" name="message" required placeholder="What are you working on?"></textarea>
+        <textarea class="fta" id="cMsg" name="message" required placeholder="Tell me about a role or opportunity"></textarea>
         <div class="form-ok" id="formOk">MESSAGE SENT. WILL REPLY WITHIN 48 HOURS.</div>
         <button type="submit" class="btn btn--primary" style="width:100%;justify-content:center;" id="submitBtn">Send Message</button>
       </form>
@@ -1110,7 +1112,7 @@ a { color: inherit; text-decoration: none; }
 <!-- FOOTER -->
 <footer class="footer">
   <span>Mohamed Mohamud · mmohamud.me</span>
-  <span>2026</span>
+  <span>&copy; 2026 Mohamed Mohamud</span>
   <span>Security+ · DoD 8570 IAT II</span>
 </footer>
 <div style="text-align:center;padding:4px 0 8px;">
@@ -1238,13 +1240,17 @@ function closeBlogModal(e) {
 
 async function loadBlog() {
   var el = document.getElementById('blogList');
+  var section = document.getElementById('writing');
+  var navLink = document.querySelector('a[href="#writing"]');
   try {
-    var res = await fetch(SUPA_URL + '/rest/v1/posts?select=*&order=created_at.desc&limit=8', {
+    var res = await fetch(SUPA_URL + '/rest/v1/posts?select=*&status=eq.published&order=created_at.desc&limit=8', {
       headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY }
     });
     var posts = await res.json();
     if (!Array.isArray(posts) || !posts.length) {
-      el.innerHTML = '<div class="blog-empty">No posts yet. Use the admin panel to publish your first one.</div>'; return;
+      if (section) section.style.display = 'none';
+      if (navLink) navLink.style.display = 'none';
+      return;
     }
     el.innerHTML = posts.map(function(p) {
       var enc = encodeURIComponent(JSON.stringify(p)).replace(/'/g, '%27');
@@ -1256,7 +1262,8 @@ async function loadBlog() {
         '</div>';
     }).join('') + '<div style="height:1px;background:var(--line);margin-top:0;"></div>';
   } catch (err) {
-    el.innerHTML = '<div class="blog-empty">Could not load posts.</div>';
+    if (section) section.style.display = 'none';
+    if (navLink) navLink.style.display = 'none';
   }
 }
 loadBlog();
